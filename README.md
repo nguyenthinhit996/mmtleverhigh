@@ -1,8 +1,12 @@
 # mmtleverhigh
 khtn_18hcb_mmtnc
+
 Đồ án thực hành Mạng máy tính nâng cao
+
 Đề tài: Ứng dụng truyền nhận file qua mạng
+
 Sinh viên thực hiện
+
 
 |STT | MSSV 	  | Tên                 | Email                       |
 |----|----------|---------------------|-----------------------------|
