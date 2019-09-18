@@ -5,17 +5,39 @@
  */
 package appservermmt;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author peter
  */
 public class jmainserver extends javax.swing.JFrame {
 
+    ArrayList clientOutputStreams;
+    ArrayList fileServerOutputStreams;
+    String ip =getIP();
+    int port=2222;
+    Thread startSer;
+    
     /**
      * Creates new form jmainserver
      */
     public jmainserver() {
         initComponents();
+        lab_ipservermaster.setText(ip);
+        lab_portservermaster.setText(String.valueOf(port));
     }
 
     /**
@@ -27,21 +49,187 @@ public class jmainserver extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        lab_portservermaster = new javax.swing.JLabel();
+        lab_ipservermaster = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txt_area = new javax.swing.JTextArea();
+        jLabel6 = new javax.swing.JLabel();
+        btn_stopservermaster = new javax.swing.JButton();
+        btn_clearscript = new javax.swing.JButton();
+        btn_savescript = new javax.swing.JButton();
+        btn_startservermaster = new javax.swing.JButton();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Server Master");
+        setResizable(false);
+
+        jPanel1.setBackground(new java.awt.Color(119, 194, 218));
+        jPanel1.setPreferredSize(new java.awt.Dimension(500, 500));
+
+        jLabel1.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel1.setText("IP:");
+
+        jLabel2.setFont(new java.awt.Font("Ubuntu", 1, 20)); // NOI18N
+        jLabel2.setText("Information of server master");
+
+        jLabel3.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel3.setText("Port:");
+
+        lab_portservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        lab_portservermaster.setText("2222");
+
+        lab_ipservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        lab_ipservermaster.setText("localhost");
+
+        txt_area.setColumns(20);
+        txt_area.setRows(5);
+        jScrollPane1.setViewportView(txt_area);
+
+        jLabel6.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel6.setText("Information of connections");
+
+        btn_stopservermaster.setBackground(new java.awt.Color(46, 45, 38));
+        btn_stopservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_stopservermaster.setText("Stop server");
+        btn_stopservermaster.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_stopservermasterActionPerformed(evt);
+            }
+        });
+
+        btn_clearscript.setBackground(new java.awt.Color(171, 153, 36));
+        btn_clearscript.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_clearscript.setText("Clear ");
+        btn_clearscript.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_clearscriptActionPerformed(evt);
+            }
+        });
+
+        btn_savescript.setBackground(new java.awt.Color(171, 153, 36));
+        btn_savescript.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_savescript.setText("Save ");
+        btn_savescript.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_savescriptActionPerformed(evt);
+            }
+        });
+
+        btn_startservermaster.setBackground(new java.awt.Color(83, 136, 53));
+        btn_startservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_startservermaster.setText("Start server");
+        btn_startservermaster.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_startservermasterActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane1)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(71, 71, 71)
+                .addComponent(jLabel1)
+                .addGap(17, 17, 17)
+                .addComponent(lab_ipservermaster)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel3)
+                .addGap(18, 18, 18)
+                .addComponent(lab_portservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(63, 63, 63))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jLabel2)
+                        .addGap(101, 101, 101))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(btn_startservermaster, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_stopservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27)
+                        .addComponent(btn_savescript, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_clearscript, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(15, 15, 15))))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addGap(15, 15, 15)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(jLabel3)
+                    .addComponent(lab_portservermaster)
+                    .addComponent(lab_ipservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(53, 53, 53)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_startservermaster)
+                    .addComponent(btn_stopservermaster)
+                    .addComponent(btn_savescript)
+                    .addComponent(btn_clearscript))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btn_stopservermasterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_stopservermasterActionPerformed
+        // TODO add your handling code here:
+        if(startSer.isAlive()){
+            // bao cho client va file server is stop
+            tellEveryone("stop");
+           startSer.interrupt();
+        }
+        txt_area.append("Server is stop ...");
+        txt_area.append("\n");
+    }//GEN-LAST:event_btn_stopservermasterActionPerformed
+
+    private void btn_clearscriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_clearscriptActionPerformed
+        // TODO add your handling code here:
+        txt_area.setText("");
+    }//GEN-LAST:event_btn_clearscriptActionPerformed
+
+    private void btn_savescriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_savescriptActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btn_savescriptActionPerformed
+
+    private void btn_startservermasterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_startservermasterActionPerformed
+        // TODO add your handling code here:
+         // TODO add your handling code here:
+        if(startSer==null || !startSer.isAlive()){
+            startSer= new Thread(new ServerStart());
+            startSer.start();
+        }
+        txt_area.append("Server is running...\n");
+        txt_area.append("\n");
+    }//GEN-LAST:event_btn_startservermasterActionPerformed
 
     /**
      * @param args the command line arguments
@@ -79,5 +267,248 @@ public class jmainserver extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btn_clearscript;
+    private javax.swing.JButton btn_savescript;
+    private javax.swing.JButton btn_startservermaster;
+    private javax.swing.JButton btn_stopservermaster;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lab_ipservermaster;
+    private javax.swing.JLabel lab_portservermaster;
+    private javax.swing.JTextArea txt_area;
     // End of variables declaration//GEN-END:variables
+
+    public class ServerStart implements Runnable 
+    {
+        @Override
+        public void run() 
+        {
+            clientOutputStreams = new ArrayList();
+            fileServerOutputStreams= new ArrayList();
+
+            try 
+            {
+                ServerSocket serverSock = new ServerSocket(2222);
+
+                while (true) 
+                {
+				Socket Sock = serverSock.accept();
+				PrintWriter writer = new PrintWriter(Sock.getOutputStream());
+                                
+                                InputStreamReader isReader = new InputStreamReader(Sock.getInputStream());
+                                BufferedReader reader = new BufferedReader(isReader);
+                                String identity;
+                                if((identity = reader.readLine()) != null){
+                                    if(identity.equals("client")){
+                                        // tao thread client
+                                        Thread listener = new Thread(new ClientHandler(Sock, writer));
+                                        listener.start();
+                                        clientOutputStreams.add(writer);
+                                        txt_area.append("Got a connection client. \n");
+                                    }
+                                    else{
+                                        // tao thread file server
+                                        Thread listener = new Thread(new FileServerHandler(Sock, writer));
+                                        listener.start();
+                                        fileServerOutputStreams.add(writer);
+                                        txt_area.append("Got a connection File. \n");
+                                        
+                                    }
+                                }
+
+				
+                }
+            }
+            catch (Exception ex)
+            {
+                txt_area.append("Error making a connection. \n");
+            }
+        }
+    }
+    
+    // thread client
+    public class ClientHandler implements Runnable	
+   {
+       BufferedReader inClient;
+       Socket sockClient;
+       PrintWriter Outclient;
+
+       public ClientHandler(Socket clientSocket, PrintWriter out) 
+       {
+            Outclient = out;
+            try 
+            {
+                sockClient = clientSocket;
+                InputStreamReader isReader = new InputStreamReader(sockClient.getInputStream());
+                inClient = new BufferedReader(isReader);
+            }
+            catch (Exception ex) 
+            {
+                txt_area.append("Unexpected error ClientHandler... \n");
+            }
+
+       }
+
+       @Override
+       public void run() 
+       {
+            String message, connect = "Connect", disconnect = "Disconnect", chat = "Chat" ;
+            String[] data;
+
+            try 
+            {
+                while ((message = inClient.readLine()) != null) 
+                {
+                    txt_area.append("Received: " + message + "\n");
+                } 
+             } 
+             catch (Exception ex) 
+             {
+                txt_area.append("Lost a connection. \n");
+                ex.printStackTrace();
+                clientOutputStreams.remove(Outclient);
+             } 
+	} 
+    }
+    
+    // thread file server
+     public class FileServerHandler implements Runnable	
+   {
+       BufferedReader inFileServer;
+       Socket sockFileServer;
+       PrintWriter outFileServer;
+
+       public FileServerHandler(Socket Socket, PrintWriter out) 
+       {
+            outFileServer = out;
+            try 
+            {
+                sockFileServer = Socket;
+                InputStreamReader isReader = new InputStreamReader(sockFileServer.getInputStream());
+                inFileServer = new BufferedReader(isReader);
+            }
+            catch (Exception ex) 
+            {
+                txt_area.append("Unexpected error FileServerHandler... \n");
+            }
+
+       }
+
+       @Override
+       public void run() 
+       {
+            String message, connect = "Connect", disconnect = "Disconnect", chat = "Chat" ;
+            String[] data;
+
+            try 
+            {
+                while ((message = inFileServer.readLine()) != null) 
+                {
+                    txt_area.append("Received: " + message + "\n");
+                } 
+             } 
+             catch (Exception ex) 
+             {
+                txt_area.append("Lost a connection File server. \n");
+                ex.printStackTrace();
+                fileServerOutputStreams.remove(outFileServer);
+             } 
+	} 
+    }
+     
+     String getIP()
+     {
+         Enumeration e;
+        try {
+            e = NetworkInterface.getNetworkInterfaces();
+            while(e.hasMoreElements())
+            {
+                NetworkInterface n = (NetworkInterface) e.nextElement();
+                Enumeration ee = n.getInetAddresses();
+                while (ee.hasMoreElements())
+                {
+                    InetAddress i = (InetAddress) ee.nextElement();
+
+                    if(i.isSiteLocalAddress()){
+                        System.out.println("i.isSiteLocalAddress()"+i.getHostAddress());
+                        return i.getHostAddress();
+                    }
+                }
+            }
+           
+        } catch (SocketException ex) {
+            Logger.getLogger(jmainserver.class.getName()).log(Level.SEVERE, null, ex);
+            txt_area.append("Get address Error !!! ");
+        }
+        return "localhost";   
+     }
+     
+     // stop all thread 
+     public void tellEveryone(String message) 
+     {
+	Iterator cilent = clientOutputStreams.iterator();
+        
+        Iterator fileser = fileServerOutputStreams.iterator();
+
+        while (cilent.hasNext()) 
+        {
+            try 
+            {
+                PrintWriter writer = (PrintWriter) cilent.next();
+		writer.println(message);
+		txt_area.append("Sending: " + message + "\n");
+                writer.flush();
+                txt_area.setCaretPosition(txt_area.getDocument().getLength());
+
+            } 
+            catch (Exception ex) 
+            {
+		txt_area.append("Error telling everyone. \n");
+            }
+        } 
+        
+        while (fileser.hasNext()) 
+        {
+            try 
+            {
+                PrintWriter writer = (PrintWriter) fileser.next();
+		writer.println(message);
+		txt_area.append("Sending: " + message + "\n");
+                writer.flush();
+                txt_area.setCaretPosition(txt_area.getDocument().getLength());
+
+            } 
+            catch (Exception ex) 
+            {
+		txt_area.append("Error telling everyone. \n");
+            }
+        } 
+    }
+    
+     public void tellEveryClient(String message) 
+     {
+	Iterator client = clientOutputStreams.iterator();
+
+        while (client.hasNext()) 
+        {
+            try 
+            {
+                PrintWriter writer = (PrintWriter) client.next();
+		writer.println(message);
+		txt_area.append("Sending: " + message + "\n");
+                writer.flush();
+                txt_area.setCaretPosition(txt_area.getDocument().getLength());
+
+            } 
+            catch (Exception ex) 
+            {
+		txt_area.append("Error telling everyone. \n");
+            }
+        } 
+        
+    }
 }
