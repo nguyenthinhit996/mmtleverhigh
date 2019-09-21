@@ -1,9 +1,20 @@
 package serverfile;
 
+ 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.lang3.StringUtils;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -18,6 +29,9 @@ import java.util.Enumeration;
  */
 public class jmainfileserver extends javax.swing.JFrame {
 
+     ArrayList clientOutputStreams ;
+     PrintWriter outServerMasterStream;
+     Thread serverStart;
     /**
      * Creates new form jmainserver
      */
@@ -27,6 +41,10 @@ public class jmainfileserver extends javax.swing.JFrame {
         txt_ipserver.setText("");
         txt_port.setText("");
         ipfileserver.setText(getIP());
+        // random 5000 5999
+        lab_port.setText(getPort());
+        txt_ipserver.setText(getIP());
+        txt_port.setText("2222");
     }
 
     /**
@@ -54,11 +72,17 @@ public class jmainfileserver extends javax.swing.JFrame {
         list_file = new javax.swing.JList<>();
         brower = new javax.swing.JButton();
         lab_path = new javax.swing.JLabel();
+        lab_port = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("File server");
-        setPreferredSize(new java.awt.Dimension(550, 500));
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(119, 194, 218));
         jPanel1.setPreferredSize(new java.awt.Dimension(550, 500));
@@ -93,9 +117,9 @@ public class jmainfileserver extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         jLabel5.setText("Port:");
 
-        txt_port.setText("jTextField1");
+        txt_port.setText("2222");
 
-        txt_ipserver.setText("jTextField1");
+        txt_ipserver.setText("192.168.000.0");
 
         error.setBackground(new java.awt.Color(59, 52, 51));
         error.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
@@ -121,6 +145,12 @@ public class jmainfileserver extends javax.swing.JFrame {
         lab_path.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         lab_path.setText("D:/abc/cbf/");
 
+        lab_port.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        lab_port.setText("localhost");
+
+        jLabel7.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel7.setText("Port:");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -132,32 +162,39 @@ public class jmainfileserver extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txt_ipserver)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel5)
-                        .addGap(6, 6, 6)
-                        .addComponent(txt_port, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btn_connection, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(ipfileserver))
-                            .addComponent(error, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(ipfileserver)
+                                .addGap(108, 108, 108)
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(lab_port))
+                            .addComponent(error, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(lab_path, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(brower, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txt_ipserver, javax.swing.GroupLayout.PREFERRED_SIZE, 217, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel5)
+                                .addGap(6, 6, 6))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(lab_path, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(brower, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txt_port, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -166,29 +203,29 @@ public class jmainfileserver extends javax.swing.JFrame {
                 .addComponent(jLabel4)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(ipfileserver, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ipfileserver, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7)
+                    .addComponent(lab_port, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
+                .addGap(12, 12, 12)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(brower)
+                    .addComponent(lab_path))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(error)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel5)
-                            .addComponent(txt_ipserver, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txt_port, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btn_connection)
-                        .addGap(64, 64, 64))
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(brower)
-                        .addComponent(lab_path)))
-                .addGap(10, 10, 10)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel5)
+                    .addComponent(txt_ipserver, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txt_port, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btn_connection)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -208,13 +245,43 @@ public class jmainfileserver extends javax.swing.JFrame {
 
     private void btn_connectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_connectionActionPerformed
         // TODO add your handling code here:
-        // tao ra tieng trinh socket 
-        // vua nhan dc vua gui dc
+        // kiem tra set thu muc chua
+         if(serverStart==null){
+             if(StringUtils.isEmpty(lab_path.getText()) 
+                || StringUtils.isEmpty(txt_ipserver.getText()) 
+                || StringUtils.isEmpty(txt_port.getText())){
+                error.setText("Connect Error");
+                error.setVisible(true);
+            }else{
+                error.setVisible(false);
+                // conenct servermaster
+                serverStart = new Thread(new ServerStart());
+                serverStart.start();
+             }
+        }else{
+             error.setText("Connect Error");
+            error.setVisible(true);
+         }
+        
+            
+            // vua nhan dc vua gui dc
+            ArrayList clientOutputStreams = new ArrayList();
+
     }//GEN-LAST:event_btn_connectionActionPerformed
 
     private void browerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browerActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_browerActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        // TODO add your handling code here:
+        // gui gat ket noi server master
+        if(outServerMasterStream != null){
+            outServerMasterStream.print("exit");
+            outServerMasterStream.flush();
+        }
+        
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -293,6 +360,103 @@ public class jmainfileserver extends javax.swing.JFrame {
         return "localhost";   
      }
 
+    // random port 5000 5999
+    String getPort(){
+        Random rand = new Random();
+         int random = rand.nextInt((5999 - 5000) + 1) + 5000;
+         return String.valueOf(random);
+    }
+    
+    // thread start server
+    
+    public class ServerStart implements Runnable 
+    {
+        @Override
+        public void run() 
+        {
+             Socket sock;
+            try {
+                // ket noi voi Servermaster
+                sock = new Socket(txt_ipserver.getText().toString(), Integer.valueOf(txt_port.getText()));
+                outServerMasterStream = new PrintWriter(sock.getOutputStream());
+                // gui thong bao den day la file server
+                outServerMasterStream.println("serverfile");
+                outServerMasterStream.flush();
+                // thread lang nghe ket noi tu server
+                Thread serverMasterHandler = new Thread( new ServerMasterHandler(sock));
+                serverMasterHandler.start();  
+                error.setVisible(false); 
+                System.out.println("Ok ket noi thanh cong");
+                
+                // ket noi UDP vs client
+                while (true) {                    
+                  break;  
+                } 
+                
+                 
+            } catch (IOException ex) {
+                Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
+               error.setText("Connect Error");
+                error.setVisible(true); 
+            }
+        }
+    }
+    
+    
+    // ServerMasterHandler
+     public class ServerMasterHandler implements Runnable	
+   {
+       BufferedReader inFileServer;
+       Socket sockFileServer;
+        
+
+       public ServerMasterHandler(Socket Socket) 
+       {
+            
+            try 
+            {
+                sockFileServer = Socket;
+                InputStreamReader isReader = new InputStreamReader(sockFileServer.getInputStream());
+                inFileServer = new BufferedReader(isReader);
+            }
+            catch (Exception ex) 
+            {
+                error.setText("Error connect with server");
+                error.setVisible(true);
+                Thread.currentThread().interrupt();
+                
+            }
+
+       }
+
+       @Override
+       public void run() 
+       {
+            String message;
+            String[] data;
+
+            try 
+            {
+                while ((message = inFileServer.readLine()) != null) 
+                {
+                    if(message.equals("exitservermaster")){
+                       error.setText("Error connect with server");
+                       error.setVisible(true);
+                       Thread.currentThread().interrupt();
+                       
+                    }
+                } 
+             } 
+             catch (Exception ex) 
+             { 
+                 error.setText("Error connect with server");
+                 error.setVisible(true);
+                ex.printStackTrace();
+                Thread.currentThread().interrupt();
+             } 
+	} 
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton brower;
     private javax.swing.JButton btn_connection;
@@ -304,9 +468,11 @@ public class jmainfileserver extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lab_path;
+    private javax.swing.JLabel lab_port;
     private javax.swing.JList<String> list_file;
     private javax.swing.JTextField txt_ipserver;
     private javax.swing.JTextField txt_port;

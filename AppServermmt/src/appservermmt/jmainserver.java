@@ -38,6 +38,7 @@ public class jmainserver extends javax.swing.JFrame {
         initComponents();
         lab_ipservermaster.setText(ip);
         lab_portservermaster.setText(String.valueOf(port));
+        startServer();
     }
 
     /**
@@ -58,14 +59,17 @@ public class jmainserver extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         txt_area = new javax.swing.JTextArea();
         jLabel6 = new javax.swing.JLabel();
-        btn_stopservermaster = new javax.swing.JButton();
         btn_clearscript = new javax.swing.JButton();
         btn_savescript = new javax.swing.JButton();
-        btn_startservermaster = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Server Master");
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(119, 194, 218));
         jPanel1.setPreferredSize(new java.awt.Dimension(500, 500));
@@ -92,15 +96,6 @@ public class jmainserver extends javax.swing.JFrame {
         jLabel6.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         jLabel6.setText("Information of connections");
 
-        btn_stopservermaster.setBackground(new java.awt.Color(46, 45, 38));
-        btn_stopservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        btn_stopservermaster.setText("Stop server");
-        btn_stopservermaster.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_stopservermasterActionPerformed(evt);
-            }
-        });
-
         btn_clearscript.setBackground(new java.awt.Color(171, 153, 36));
         btn_clearscript.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         btn_clearscript.setText("Clear ");
@@ -119,15 +114,6 @@ public class jmainserver extends javax.swing.JFrame {
             }
         });
 
-        btn_startservermaster.setBackground(new java.awt.Color(83, 136, 53));
-        btn_startservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        btn_startservermaster.setText("Start server");
-        btn_startservermaster.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_startservermasterActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -143,26 +129,19 @@ public class jmainserver extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(lab_portservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(63, 63, 63))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(123, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addGap(101, 101, 101))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addGap(101, 101, 101))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(btn_startservermaster, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_stopservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(btn_savescript, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btn_clearscript, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15))))
+                        .addGap(53, 53, 53)
+                        .addComponent(btn_clearscript, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -174,16 +153,14 @@ public class jmainserver extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(lab_portservermaster)
                     .addComponent(lab_ipservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(53, 53, 53)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btn_startservermaster)
-                    .addComponent(btn_stopservermaster)
                     .addComponent(btn_savescript)
                     .addComponent(btn_clearscript))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -200,17 +177,6 @@ public class jmainserver extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btn_stopservermasterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_stopservermasterActionPerformed
-        // TODO add your handling code here:
-        if(startSer.isAlive()){
-            // bao cho client va file server is stop
-            tellEveryone("stop");
-           startSer.interrupt();
-        }
-        txt_area.append("Server is stop ...");
-        txt_area.append("\n");
-    }//GEN-LAST:event_btn_stopservermasterActionPerformed
-
     private void btn_clearscriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_clearscriptActionPerformed
         // TODO add your handling code here:
         txt_area.setText("");
@@ -220,16 +186,10 @@ public class jmainserver extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btn_savescriptActionPerformed
 
-    private void btn_startservermasterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_startservermasterActionPerformed
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
-         // TODO add your handling code here:
-        if(startSer==null || !startSer.isAlive()){
-            startSer= new Thread(new ServerStart());
-            startSer.start();
-        }
-        txt_area.append("Server is running...\n");
-        txt_area.append("\n");
-    }//GEN-LAST:event_btn_startservermasterActionPerformed
+        tellEveryone("exitservermaster");
+    }//GEN-LAST:event_formWindowClosing
 
     /**
      * @param args the command line arguments
@@ -269,8 +229,6 @@ public class jmainserver extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_clearscript;
     private javax.swing.JButton btn_savescript;
-    private javax.swing.JButton btn_startservermaster;
-    private javax.swing.JButton btn_stopservermaster;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -311,11 +269,12 @@ public class jmainserver extends javax.swing.JFrame {
                                         txt_area.append("Got a connection client. \n");
                                     }
                                     else{
+                                         
                                         // tao thread file server
                                         Thread listener = new Thread(new FileServerHandler(Sock, writer));
                                         listener.start();
                                         fileServerOutputStreams.add(writer);
-                                        txt_area.append("Got a connection File. \n");
+                                        txt_area.append("Got a connection FileServer. \n");
                                         
                                     }
                                 }
@@ -356,19 +315,23 @@ public class jmainserver extends javax.swing.JFrame {
        @Override
        public void run() 
        {
-            String message, connect = "Connect", disconnect = "Disconnect", chat = "Chat" ;
+            String message ;
             String[] data;
 
             try 
             {
                 while ((message = inClient.readLine()) != null) 
                 {
-                    txt_area.append("Received: " + message + "\n");
+                    txt_area.append("Lost conect Client " + message + "\n");
+                    if(message.equals("exit")){
+                        clientOutputStreams.remove(Outclient);
+                        Thread.currentThread().interrupt();
+                    }
                 } 
              } 
              catch (Exception ex) 
              {
-                txt_area.append("Lost a connection. \n");
+                txt_area.append("Lost conect Client\n");
                 ex.printStackTrace();
                 clientOutputStreams.remove(Outclient);
              } 
@@ -401,19 +364,23 @@ public class jmainserver extends javax.swing.JFrame {
        @Override
        public void run() 
        {
-            String message, connect = "Connect", disconnect = "Disconnect", chat = "Chat" ;
+            String message ;
             String[] data;
 
             try 
             {
                 while ((message = inFileServer.readLine()) != null) 
                 {
-                    txt_area.append("Received: " + message + "\n");
+                    txt_area.append("Lost a connection FileServer " + message + "\n");
+                    if(message.equals("exit")){
+                        fileServerOutputStreams.remove(outFileServer);
+                        Thread.currentThread().interrupt();
+                    }
                 } 
              } 
              catch (Exception ex) 
              {
-                txt_area.append("Lost a connection File server. \n");
+                txt_area.append("Lost a connection FileServer. \n");
                 ex.printStackTrace();
                 fileServerOutputStreams.remove(outFileServer);
              } 
@@ -511,4 +478,11 @@ public class jmainserver extends javax.swing.JFrame {
         } 
         
     }
+     
+     // start server master
+     void startServer(){
+          startSer= new Thread(new ServerStart());
+          startSer.start();
+          txt_area.append("Server is running...\n");
+     }
 }
