@@ -5,6 +5,7 @@
  */
 package appclientmmt;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,7 +28,9 @@ public class jmainclient extends javax.swing.JFrame {
     
       
      PrintWriter outServerMasterStream;
-     Thread serverStart;
+     
+     // is connect servermaster
+     boolean isConnectServerMaster=false;
     /**
      * Creates new form jmainserver
      */
@@ -70,7 +73,7 @@ public class jmainclient extends javax.swing.JFrame {
         @Override
         public void run() 
         {
-             Socket sock;
+            Socket sock;
             try {
                 // ket noi voi Servermaster
                 sock = new Socket(txt_ipservermas.getText().toString(), Integer.valueOf(txt_portmas.getText()));
@@ -78,6 +81,9 @@ public class jmainclient extends javax.swing.JFrame {
                 // gui thong bao den day la file server
                 outServerMasterStream.println("client");
                 outServerMasterStream.flush();
+                error.setText("Connect success ");
+                error.setVisible(true);
+                error.setForeground(Color.GREEN);
                 // thread lang nghe ket noi tu server
                 String message;
                 InputStreamReader isReader = new InputStreamReader(sock.getInputStream());
@@ -90,13 +96,13 @@ public class jmainclient extends javax.swing.JFrame {
                        Thread.currentThread().interrupt(); 
                     }
                 }
-                
-                error.setVisible(false); 
                 System.out.println("Ok ket noi thanh cong");
                  
             } catch (IOException ex) {
                 error.setText("Connect Error");
+                error.setForeground(Color.red);
                 error.setVisible(true); 
+                isConnectServerMaster=false;
                 Thread.currentThread().interrupt(); 
             }
         }
@@ -309,19 +315,21 @@ public class jmainclient extends javax.swing.JFrame {
 
     private void btn_connectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_connectActionPerformed
         // TODO add your handling code here:       
-         if(serverStart==null){
+         if(!isConnectServerMaster){
              if(StringUtils.isEmpty(txt_ipservermas.getText()) 
                 || StringUtils.isEmpty(txt_portmas.getText())){
                 error.setText("Connect Error");
+                 error.setForeground(Color.red);
                 error.setVisible(true);
             }else{
                 error.setVisible(false);
                 // conenct servermaster
-                serverStart = new Thread(new ServerStart());
+                Thread serverStart = new Thread(new ServerStart());
                 serverStart.start();
              }
         }else{
-             error.setText("Connect Error");
+             error.setText("Connect is exist");
+              error.setForeground(Color.GREEN);
             error.setVisible(true);
          }
     }//GEN-LAST:event_btn_connectActionPerformed

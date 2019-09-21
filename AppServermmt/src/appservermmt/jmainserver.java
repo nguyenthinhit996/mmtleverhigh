@@ -6,6 +6,7 @@
 package appservermmt;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -29,7 +30,6 @@ public class jmainserver extends javax.swing.JFrame {
     ArrayList fileServerOutputStreams;
     String ip =getIP();
     int port=2222;
-    Thread startSer;
     
     /**
      * Creates new form jmainserver
@@ -60,7 +60,7 @@ public class jmainserver extends javax.swing.JFrame {
         txt_area = new javax.swing.JTextArea();
         jLabel6 = new javax.swing.JLabel();
         btn_clearscript = new javax.swing.JButton();
-        btn_savescript = new javax.swing.JButton();
+        btn_savescript1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Server Master");
@@ -105,12 +105,12 @@ public class jmainserver extends javax.swing.JFrame {
             }
         });
 
-        btn_savescript.setBackground(new java.awt.Color(171, 153, 36));
-        btn_savescript.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        btn_savescript.setText("Save ");
-        btn_savescript.addActionListener(new java.awt.event.ActionListener() {
+        btn_savescript1.setBackground(new java.awt.Color(171, 153, 36));
+        btn_savescript1.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_savescript1.setText("Save ");
+        btn_savescript1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_savescriptActionPerformed(evt);
+                btn_savescript1ActionPerformed(evt);
             }
         });
 
@@ -119,7 +119,22 @@ public class jmainserver extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jScrollPane1)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(123, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(101, 101, 101))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(btn_savescript1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(29, 29, 29)
+                        .addComponent(btn_clearscript, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
+            .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(71, 71, 71)
                 .addComponent(jLabel1)
                 .addGap(17, 17, 17)
@@ -129,19 +144,6 @@ public class jmainserver extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(lab_portservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(63, 63, 63))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(123, Short.MAX_VALUE)
-                .addComponent(jLabel2)
-                .addGap(101, 101, 101))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(btn_savescript, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(53, 53, 53)
-                        .addComponent(btn_clearscript, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -153,11 +155,11 @@ public class jmainserver extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(lab_portservermaster)
                     .addComponent(lab_ipservermaster, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btn_savescript)
-                    .addComponent(btn_clearscript))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_clearscript)
+                    .addComponent(btn_savescript1))
+                .addGap(12, 12, 12)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
@@ -182,14 +184,14 @@ public class jmainserver extends javax.swing.JFrame {
         txt_area.setText("");
     }//GEN-LAST:event_btn_clearscriptActionPerformed
 
-    private void btn_savescriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_savescriptActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btn_savescriptActionPerformed
-
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
         tellEveryone("exitservermaster");
     }//GEN-LAST:event_formWindowClosing
+
+    private void btn_savescript1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_savescript1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btn_savescript1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -228,7 +230,7 @@ public class jmainserver extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_clearscript;
-    private javax.swing.JButton btn_savescript;
+    private javax.swing.JButton btn_savescript1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -291,7 +293,7 @@ public class jmainserver extends javax.swing.JFrame {
     
     // thread client
     public class ClientHandler implements Runnable	
-   {
+    {
        BufferedReader inClient;
        Socket sockClient;
        PrintWriter Outclient;
@@ -320,27 +322,29 @@ public class jmainserver extends javax.swing.JFrame {
 
             try 
             {
-                while ((message = inClient.readLine()) != null) 
-                {
-                    txt_area.append("Lost conect Client " + message + "\n");
-                    if(message.equals("exit")){
-                        clientOutputStreams.remove(Outclient);
-                        Thread.currentThread().interrupt();
+                    while ((message = inClient.readLine()) != null) 
+                    {
+                        if(message.equals("exit")){
+                            txt_area.append("Lost conect Client " + message + "\n");
+                            clientOutputStreams.remove(Outclient);
+                            Thread.currentThread().interrupt();
+                        }
                     }
-                } 
              } 
-             catch (Exception ex) 
+             catch (SocketException ex) 
              {
                 txt_area.append("Lost conect Client\n");
                 ex.printStackTrace();
                 clientOutputStreams.remove(Outclient);
-             } 
+             } catch (IOException ex) { 
+               Logger.getLogger(jmainserver.class.getName()).log(Level.SEVERE, null, ex);
+           } 
 	} 
     }
     
     // thread file server
-     public class FileServerHandler implements Runnable	
-   {
+    public class FileServerHandler implements Runnable	
+    {
        BufferedReader inFileServer;
        Socket sockFileServer;
        PrintWriter outFileServer;
@@ -481,7 +485,7 @@ public class jmainserver extends javax.swing.JFrame {
      
      // start server master
      void startServer(){
-          startSer= new Thread(new ServerStart());
+          Thread startSer= new Thread(new ServerStart());
           startSer.start();
           txt_area.append("Server is running...\n");
      }
