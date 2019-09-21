@@ -1,6 +1,7 @@
 package serverfile;
 
  
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,7 +32,7 @@ public class jmainfileserver extends javax.swing.JFrame {
 
      ArrayList clientOutputStreams ;
      PrintWriter outServerMasterStream;
-     Thread serverStart;
+     boolean isConnect =false;
     /**
      * Creates new form jmainserver
      */
@@ -246,20 +247,22 @@ public class jmainfileserver extends javax.swing.JFrame {
     private void btn_connectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_connectionActionPerformed
         // TODO add your handling code here:
         // kiem tra set thu muc chua
-         if(serverStart==null){
+         if(!isConnect){
              if(StringUtils.isEmpty(lab_path.getText()) 
                 || StringUtils.isEmpty(txt_ipserver.getText()) 
                 || StringUtils.isEmpty(txt_port.getText())){
                 error.setText("Connect Error");
+                error.setForeground(Color.red);
                 error.setVisible(true);
             }else{
                 error.setVisible(false);
                 // conenct servermaster
-                serverStart = new Thread(new ServerStart());
+                Thread serverStart = new Thread(new ServerStart());
                 serverStart.start();
              }
         }else{
-             error.setText("Connect Error");
+             error.setText("Connect is exit");
+             error.setForeground(Color.GREEN);
             error.setVisible(true);
          }
         
@@ -379,13 +382,16 @@ public class jmainfileserver extends javax.swing.JFrame {
                 // ket noi voi Servermaster
                 sock = new Socket(txt_ipserver.getText().toString(), Integer.valueOf(txt_port.getText()));
                 outServerMasterStream = new PrintWriter(sock.getOutputStream());
-                // gui thong bao den day la file server
+                // gui thong bao den servermaster la file server
                 outServerMasterStream.println("serverfile");
                 outServerMasterStream.flush();
                 // thread lang nghe ket noi tu server
                 Thread serverMasterHandler = new Thread( new ServerMasterHandler(sock));
-                serverMasterHandler.start();  
-                error.setVisible(false); 
+                serverMasterHandler.start();
+                isConnect=true;
+                error.setText("Connect success ");
+                error.setVisible(true);
+                error.setForeground(Color.GREEN);
                 System.out.println("Ok ket noi thanh cong");
                 
                 // ket noi UDP vs client
@@ -393,11 +399,14 @@ public class jmainfileserver extends javax.swing.JFrame {
                   break;  
                 } 
                 
-                 
-            } catch (IOException ex) {
+                
+            } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
-               error.setText("Connect Error");
+                error.setText("Connect Error");
+                error.setForeground(Color.red);
                 error.setVisible(true); 
+                Thread.currentThread().interrupt();
+                isConnect=false;
             }
         }
     }
@@ -411,8 +420,7 @@ public class jmainfileserver extends javax.swing.JFrame {
         
 
        public ServerMasterHandler(Socket Socket) 
-       {
-            
+       {            
             try 
             {
                 sockFileServer = Socket;
@@ -423,8 +431,9 @@ public class jmainfileserver extends javax.swing.JFrame {
             {
                 error.setText("Error connect with server");
                 error.setVisible(true);
+                error.setForeground(Color.red);
                 Thread.currentThread().interrupt();
-                
+                isConnect=false;
             }
 
        }
@@ -442,6 +451,8 @@ public class jmainfileserver extends javax.swing.JFrame {
                     if(message.equals("exitservermaster")){
                        error.setText("Error connect with server");
                        error.setVisible(true);
+                       error.setForeground(Color.red);
+                       isConnect=false;
                        Thread.currentThread().interrupt();
                        
                     }
@@ -451,7 +462,9 @@ public class jmainfileserver extends javax.swing.JFrame {
              { 
                  error.setText("Error connect with server");
                  error.setVisible(true);
+                 error.setForeground(Color.red);
                 ex.printStackTrace();
+                isConnect=false;
                 Thread.currentThread().interrupt();
              } 
 	} 
