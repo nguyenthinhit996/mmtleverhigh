@@ -92,6 +92,7 @@ public class jmainclient extends javax.swing.JFrame {
                 {
                     if(message.equals("exitservermaster")){
                        error.setText("Error connect with server");
+                       error.setForeground(Color.red);
                        error.setVisible(true);
                        Thread.currentThread().interrupt(); 
                     }
