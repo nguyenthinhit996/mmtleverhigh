@@ -424,7 +424,7 @@ public class jmainserver extends javax.swing.JFrame {
                         while(in.hasNext()){
                             FileInfo f=in.next();
                             if(f.getIpServerFile().equals(fileInfo.getIpServerFile())
-                            && fileInfo.getDestinationDirectory() == f.getDestinationDirectory()){
+                            && fileInfo.getDestinationDirectory().equals(f.getDestinationDirectory())){
                                in.remove();
                                printFileConnect(0, f);
                            }
