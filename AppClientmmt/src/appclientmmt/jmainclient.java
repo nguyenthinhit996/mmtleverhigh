@@ -105,7 +105,7 @@ public class jmainclient extends javax.swing.JFrame {
                         DefaultListModel model=new DefaultListModel();
                         for(FileInfo i:allf.getLsFile()){
                            for(String j:i.getLsName()){
-                               String in=i.getIpServerFile()+"/"+i.getPortServerFile()+j;
+                               String in=i.getIpServerFile()+"/"+i.getPortServerFile()+" | "+j;
                                 model.addElement(in);
                            }
                         }
@@ -158,8 +158,8 @@ public class jmainclient extends javax.swing.JFrame {
         list_process = new javax.swing.JList<>();
         jScrollPane2 = new javax.swing.JScrollPane();
         list_allfile = new javax.swing.JList<>();
-        savescript3 = new javax.swing.JButton();
-        savescript1 = new javax.swing.JButton();
+        btn_downloadfile = new javax.swing.JButton();
+        btn_cancel = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -226,21 +226,21 @@ public class jmainclient extends javax.swing.JFrame {
         });
         jScrollPane2.setViewportView(list_allfile);
 
-        savescript3.setBackground(new java.awt.Color(83, 136, 53));
-        savescript3.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        savescript3.setText("Download");
-        savescript3.addActionListener(new java.awt.event.ActionListener() {
+        btn_downloadfile.setBackground(new java.awt.Color(83, 136, 53));
+        btn_downloadfile.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_downloadfile.setText("Download File");
+        btn_downloadfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                savescript3ActionPerformed(evt);
+                btn_downloadfileActionPerformed(evt);
             }
         });
 
-        savescript1.setBackground(new java.awt.Color(46, 45, 38));
-        savescript1.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        savescript1.setText("Cancel");
-        savescript1.addActionListener(new java.awt.event.ActionListener() {
+        btn_cancel.setBackground(new java.awt.Color(46, 45, 38));
+        btn_cancel.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        btn_cancel.setText("Cancel Download");
+        btn_cancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                savescript1ActionPerformed(evt);
+                btn_cancelActionPerformed(evt);
             }
         });
 
@@ -271,11 +271,6 @@ public class jmainclient extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jScrollPane1)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(265, 265, 265))
-                    .addComponent(savescript1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(savescript3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txt_ipservermas, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -284,7 +279,15 @@ public class jmainclient extends javax.swing.JFrame {
                         .addGap(6, 6, 6)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(txt_portmas)
-                            .addComponent(btn_connect, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE))))
+                            .addComponent(btn_connect, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(265, 265, 265))
+                            .addComponent(btn_downloadfile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btn_cancel, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -314,13 +317,13 @@ public class jmainclient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(savescript3)
+                .addComponent(btn_downloadfile)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel8)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(savescript1)
+                .addComponent(btn_cancel)
                 .addContainerGap())
         );
 
@@ -359,13 +362,14 @@ public class jmainclient extends javax.swing.JFrame {
          }
     }//GEN-LAST:event_btn_connectActionPerformed
 
-    private void savescript3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savescript3ActionPerformed
+    private void btn_downloadfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_downloadfileActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_savescript3ActionPerformed
+        
+    }//GEN-LAST:event_btn_downloadfileActionPerformed
 
-    private void savescript1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_savescript1ActionPerformed
+    private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_savescript1ActionPerformed
+    }//GEN-LAST:event_btn_cancelActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
@@ -414,7 +418,9 @@ public class jmainclient extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btn_cancel;
     private javax.swing.JButton btn_connect;
+    private javax.swing.JButton btn_downloadfile;
     private javax.swing.JLabel error;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -429,8 +435,6 @@ public class jmainclient extends javax.swing.JFrame {
     private javax.swing.JLabel lab_ipclient;
     private javax.swing.JList<String> list_allfile;
     private javax.swing.JList<String> list_process;
-    private javax.swing.JButton savescript1;
-    private javax.swing.JButton savescript3;
     private javax.swing.JTextField txt_ipservermas;
     private javax.swing.JTextField txt_portmas;
     // End of variables declaration//GEN-END:variables
