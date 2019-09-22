@@ -1,20 +1,27 @@
 package serverfile;
 
  
+import comon.FileInfo;
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
 
 /*
@@ -30,9 +37,20 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class jmainfileserver extends javax.swing.JFrame {
 
+     //client
      ArrayList clientOutputStreams ;
-     PrintWriter outServerMasterStream;
+     
+     //servermaster
+     ObjectOutputStream ObjectOutputStreamServerMaster;
+     
      boolean isConnect =false;
+     
+     // get folder 
+     JFileChooser chooser;
+     
+     // Object FileInfo is information send to server master then servermater send to client
+     FileInfo fileinfo= new FileInfo();
+     
     /**
      * Creates new form jmainserver
      */
@@ -46,6 +64,10 @@ public class jmainfileserver extends javax.swing.JFrame {
         lab_port.setText(getPort());
         txt_ipserver.setText(getIP());
         txt_port.setText("2222");
+        lab_path.setText("No Selection");
+        DefaultListModel model=new DefaultListModel();
+        model.clear();
+        list_file.setModel(model);
     }
 
     /**
@@ -57,6 +79,7 @@ public class jmainfileserver extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jFileChooser1 = new javax.swing.JFileChooser();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -191,7 +214,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                                 .addComponent(jLabel5)
                                 .addGap(6, 6, 6))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(lab_path, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lab_path, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(brower, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -223,10 +246,10 @@ public class jmainfileserver extends javax.swing.JFrame {
                     .addComponent(txt_port, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btn_connection)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 33, Short.MAX_VALUE)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -247,24 +270,34 @@ public class jmainfileserver extends javax.swing.JFrame {
     private void btn_connectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_connectionActionPerformed
         // TODO add your handling code here:
         // kiem tra set thu muc chua
-         if(!isConnect){
-             if(StringUtils.isEmpty(lab_path.getText()) 
-                || StringUtils.isEmpty(txt_ipserver.getText()) 
-                || StringUtils.isEmpty(txt_port.getText())){
-                error.setText("Connect Error");
-                error.setForeground(Color.red);
-                error.setVisible(true);
-            }else{
-                error.setVisible(false);
-                // conenct servermaster
-                Thread serverStart = new Thread(new ServerStart());
-                serverStart.start();
-             }
-        }else{
-             error.setText("Connect is exit");
-             error.setForeground(Color.GREEN);
+        if(fileinfo.getLsName()==null || fileinfo.getLsName().isEmpty()){
+            error.setText("No Selection");
+            error.setForeground(Color.red);
             error.setVisible(true);
-         }
+        }else{
+            if(!isConnect){
+                if(StringUtils.isEmpty(lab_path.getText()) 
+                   || StringUtils.isEmpty(txt_ipserver.getText()) 
+                   || StringUtils.isEmpty(txt_port.getText())){
+                   error.setText("Connect Error");
+                   error.setForeground(Color.red);
+                   error.setVisible(true);
+               }else{
+                   error.setVisible(false);
+                   // conenct servermaster
+                   Thread serverStart = new Thread(new ServerStart());
+                   serverStart.start();
+                   fileinfo.setIpServerFile(ipfileserver.getText());
+                   fileinfo.setPortServerFile(Integer.valueOf(lab_port.getText()));
+                   fileinfo.toString();
+                }
+            }else{
+                 error.setText("Connect is exit");
+                 error.setForeground(Color.GREEN);
+                error.setVisible(true);
+             }
+        }
+         
         
             
             // vua nhan dc vua gui dc
@@ -274,14 +307,66 @@ public class jmainfileserver extends javax.swing.JFrame {
 
     private void browerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browerActionPerformed
         // TODO add your handling code here:
+        if(fileinfo.getLsName() !=null){
+            return;
+        }
+        chooser = new JFileChooser(); 
+        chooser.setCurrentDirectory(new java.io.File("."));
+        chooser.setDialogTitle("Chon Thu Muc");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        //
+        // disable the "All files" option.
+        //
+        chooser.setAcceptAllFileFilterUsed(false);
+        //    
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
+          System.out.println("getCurrentDirectory(): " 
+             +  chooser.getCurrentDirectory());
+          System.out.println("getSelectedFile() : " 
+             +  chooser.getSelectedFile());
+             lab_path.setText(chooser.getSelectedFile().toString());
+             FilenameFilter filter= new FilenameFilter() {
+              @Override
+              public boolean accept(File dir, String name) {
+                  if(name.endsWith(".zip") || name.endsWith(".rar")){
+                      return true;
+              }
+               return false;  
+          } };
+              
+             String[] listF=chooser.getSelectedFile().list(filter);
+             if(listF.length != 0){
+                fileinfo.setDestinationDirectory(chooser.getSelectedFile().toString());
+                fileinfo.setLsName(Arrays.asList(listF));
+                DefaultListModel model=new DefaultListModel();
+                for(String i:listF){
+                    model.addElement(i);
+                }
+                list_file.setModel(model);
+             }else{
+                lab_path.setText("No File avaliable in this folder");
+                isConnect=false;
+             }
+             
+          }
+        else {
+          System.out.println("No Selection ");
+          lab_path.setText("No Selection");
+          isConnect=false;
+         }
     }//GEN-LAST:event_browerActionPerformed
 
+    
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
         // gui gat ket noi server master
-        if(outServerMasterStream != null){
-            outServerMasterStream.print("exit");
-            outServerMasterStream.flush();
+        if(ObjectOutputStreamServerMaster != null){
+           fileinfo.setStatus(0);
+            try {
+                ObjectOutputStreamServerMaster.writeObject(fileinfo);
+            } catch (IOException ex) {
+                Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
     }//GEN-LAST:event_formWindowClosing
@@ -381,11 +466,17 @@ public class jmainfileserver extends javax.swing.JFrame {
             try {
                 // ket noi voi Servermaster
                 sock = new Socket(txt_ipserver.getText().toString(), Integer.valueOf(txt_port.getText()));
-                outServerMasterStream = new PrintWriter(sock.getOutputStream());
+                PrintWriter outServerMasterStream = new PrintWriter(sock.getOutputStream());
                 // gui thong bao den servermaster la file server
                 outServerMasterStream.println("serverfile");
                 outServerMasterStream.flush();
-                // thread lang nghe ket noi tu server
+                
+                // gui thong tin file den servermaster
+                fileinfo.setStatus(1);
+                ObjectOutputStreamServerMaster =new ObjectOutputStream(sock.getOutputStream());
+                ObjectOutputStreamServerMaster.writeObject(fileinfo);
+                
+                // thread lang nghe ket noi tu server cho truong hop ngat ket noi
                 Thread serverMasterHandler = new Thread( new ServerMasterHandler(sock));
                 serverMasterHandler.start();
                 isConnect=true;
@@ -475,6 +566,7 @@ public class jmainfileserver extends javax.swing.JFrame {
     private javax.swing.JButton btn_connection;
     private javax.swing.JLabel error;
     private javax.swing.JLabel ipfileserver;
+    private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
