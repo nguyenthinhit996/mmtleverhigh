@@ -424,7 +424,7 @@ public class jmainserver extends javax.swing.JFrame {
                         while(in.hasNext()){
                             FileInfo f=in.next();
                             if(f.getIpServerFile().equals(fileInfo.getIpServerFile())
-                            && fileInfo.getDestinationDirectory().equals(f.getDestinationDirectory())){
+                            && fileInfo.getPortServerFile() == f.getPortServerFile()){
                                in.remove();
                                printFileConnect(0, f);
                            }
@@ -504,7 +504,6 @@ public class jmainserver extends javax.swing.JFrame {
      {
         if(fileServerOutputStreams != null){
             Iterator fileser = fileServerOutputStreams.iterator();
-
             while (fileser.hasNext()) 
             {
                 try 
@@ -535,6 +534,7 @@ public class jmainserver extends javax.swing.JFrame {
          if(act==0){
              txt_area.append("------- Lost a file info---------\n");
              txt_area.append(f.getIpServerFile()+"\n");
+             txt_area.append(f.getPortServerFile()+"\n");
              txt_area.append(f.getDestinationDirectory()+"\n");
              for(String i:f.getLsName()){
                  txt_area.append(i+"\n");
@@ -544,6 +544,7 @@ public class jmainserver extends javax.swing.JFrame {
          if(act==1){
              txt_area.append("------- Add a file info---------\n");
              txt_area.append(f.getIpServerFile()+"\n");
+             txt_area.append(f.getPortServerFile()+"\n");
              txt_area.append(f.getDestinationDirectory()+"\n");
              for(String i:f.getLsName()){
                  txt_area.append(i+"\n");

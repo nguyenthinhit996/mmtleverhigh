@@ -112,7 +112,7 @@ public class jmainclient extends javax.swing.JFrame {
                         DefaultListModel model=new DefaultListModel();
                         for(FileInfo i:allf.getLsFile()){
                            for(String j:i.getLsName()){
-                               String in=i.getIpServerFile()+"|"+j;
+                               String in=i.getIpServerFile()+"|"+i.getPortServerFile()+"|"+j;
                                 model.addElement(in);
                            }
                         }
@@ -391,6 +391,7 @@ public class jmainclient extends javax.swing.JFrame {
                 // get path save
                 selectPathSave();
                 // thread gui nhan file vs server file
+                
                 
             }else{
                 Confim con= new Confim("Not choose file !!!");
