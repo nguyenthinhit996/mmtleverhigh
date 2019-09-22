@@ -199,7 +199,8 @@ public class jmainserver extends javax.swing.JFrame {
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
-        tellEveryone("exitservermaster");
+        tellEveryClientShutDownOrUpdateAllFile(0);
+        tellEveryFileServerShutdown();
     }//GEN-LAST:event_formWindowClosing
 
     private void btn_savescript1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_savescript1ActionPerformed
@@ -307,10 +308,12 @@ public class jmainserver extends javax.swing.JFrame {
                                         // send all infor files to client
                                         ObjectOutputStream  out= new ObjectOutputStream(Sock.getOutputStream());
                                         AllFileInfo allf= new AllFileInfo();
-                                        allf.setLsFile(listFile);
-                                        allf.setStatus(1);
-                                        out.writeObject(allf);
-                                        out.flush();
+                                        if(listFile.size()!=0){
+                                            allf.setLsFile(listFile);
+                                            allf.setStatus(1);
+                                            out.writeObject(allf);
+                                            out.flush();
+                                        }
                                         
                                         // tao thread client
                                         Thread listener = new Thread(new ClientHandler(Sock, out));
@@ -437,6 +440,7 @@ public class jmainserver extends javax.swing.JFrame {
                         listFile.add(fileInfo);
                         printFileConnect(1, fileInfo);
                     }
+                    tellEveryClientShutDownOrUpdateAllFile(1);
                 } 
              } 
              catch (Exception ex) 
@@ -476,68 +480,59 @@ public class jmainserver extends javax.swing.JFrame {
      }
      
      // stop all thread 
-     public void tellEveryone(String message) 
+     public void  tellEveryClientShutDownOrUpdateAllFile(int act) 
      {
-	Iterator cilent = clientOutputStreams.iterator();
-        
-        Iterator fileser = fileServerOutputStreams.iterator();
-
-        while (cilent.hasNext()) 
-        {
-            try 
+        if(clientOutputStreams != null){
+            Iterator client = clientOutputStreams.iterator();
+            while (client.hasNext()) 
             {
-                PrintWriter writer = (PrintWriter) cilent.next();
-		writer.println(message);
-		txt_area.append("Sending: " + message + "\n");
-                writer.flush();
-                txt_area.setCaretPosition(txt_area.getDocument().getLength());
-
-            } 
-            catch (Exception ex) 
-            {
-		txt_area.append("Error telling everyone. \n");
-            }
-        } 
-        
-        while (fileser.hasNext()) 
-        {
-            try 
-            {
-                PrintWriter writer = (PrintWriter) fileser.next();
-		writer.println(message);
-		txt_area.append("Sending: " + message + "\n");
-                writer.flush();
-                txt_area.setCaretPosition(txt_area.getDocument().getLength());
-
-            } 
-            catch (Exception ex) 
-            {
-		txt_area.append("Error telling everyone. \n");
+                try 
+                {  
+                    ObjectOutputStream  out=(ObjectOutputStream) client.next();
+                    //update
+                    if(act ==1){
+                        AllFileInfo a= new AllFileInfo();
+                        a.setLsFile(listFile);
+                        a.setStatus(1);
+                        out.writeObject(a);
+                        out.flush(); 
+                    }else{
+                        AllFileInfo a= new AllFileInfo();
+                        a.setStatus(0);
+                        out.writeObject(a);
+                        out.flush();  
+                    }
+                } 
+                catch (Exception ex) 
+                {
+                    txt_area.append("Error telling everyone. \n");
+                }
             }
         } 
     }
     
-     public void tellEveryClient(String message) 
+     public void tellEveryFileServerShutdown() 
      {
-	Iterator client = clientOutputStreams.iterator();
+        if(fileServerOutputStreams != null){
+            Iterator fileser = fileServerOutputStreams.iterator();
 
-        while (client.hasNext()) 
-        {
-            try 
+            while (fileser.hasNext()) 
             {
-                PrintWriter writer = (PrintWriter) client.next();
-		writer.println(message);
-		txt_area.append("Sending: " + message + "\n");
-                writer.flush();
-                txt_area.setCaretPosition(txt_area.getDocument().getLength());
+                try 
+                {
+                    PrintWriter writer = (PrintWriter) fileser.next();
+                    writer.println("exitservermaster");
+                    txt_area.append("Sending: exitservermaster \n");
+                    writer.flush();
+                    txt_area.setCaretPosition(txt_area.getDocument().getLength());
 
-            } 
-            catch (Exception ex) 
-            {
-		txt_area.append("Error telling everyone. \n");
-            }
-        } 
-        
+                } 
+                catch (Exception ex) 
+                {
+                    txt_area.append("Error telling everyone. \n");
+                }
+            }   
+        }
     }
      
      // start server master
