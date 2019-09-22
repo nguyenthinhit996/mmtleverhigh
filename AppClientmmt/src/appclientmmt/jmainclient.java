@@ -8,18 +8,22 @@ package appclientmmt;
 import comon.AllFileInfo;
 import comon.FileInfo;
 import java.awt.Color;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -52,6 +56,9 @@ public class jmainclient extends javax.swing.JFrame {
          model.removeAllElements();
         list_allfile.setModel(model);
         list_process.setModel(model);
+        
+        // path save
+        lab_path_save.setText("No Selection");
     }
 
     String getIP()
@@ -105,7 +112,7 @@ public class jmainclient extends javax.swing.JFrame {
                         DefaultListModel model=new DefaultListModel();
                         for(FileInfo i:allf.getLsFile()){
                            for(String j:i.getLsName()){
-                               String in=i.getIpServerFile()+"/"+i.getPortServerFile()+" | "+j;
+                               String in=i.getIpServerFile()+"|"+j;
                                 model.addElement(in);
                            }
                         }
@@ -160,7 +167,8 @@ public class jmainclient extends javax.swing.JFrame {
         list_allfile = new javax.swing.JList<>();
         btn_downloadfile = new javax.swing.JButton();
         btn_cancel = new javax.swing.JButton();
-        jLabel8 = new javax.swing.JLabel();
+        lab_path_save = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Client");
@@ -244,8 +252,11 @@ public class jmainclient extends javax.swing.JFrame {
             }
         });
 
-        jLabel8.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        jLabel8.setText("The files are processing");
+        lab_path_save.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        lab_path_save.setText("D:/abc");
+
+        jLabel9.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
+        jLabel9.setText("The files are processing");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -281,14 +292,18 @@ public class jmainclient extends javax.swing.JFrame {
                             .addComponent(txt_portmas)
                             .addComponent(btn_connect, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(265, 265, 265))
-                            .addComponent(btn_downloadfile, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btn_cancel, javax.swing.GroupLayout.Alignment.TRAILING))))
+                        .addGap(0, 362, Short.MAX_VALUE)
+                        .addComponent(btn_cancel))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(lab_path_save, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btn_downloadfile, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGap(22, 22, 22)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(267, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -317,14 +332,19 @@ public class jmainclient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btn_downloadfile)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel8)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_downloadfile)
+                    .addComponent(lab_path_save))
+                .addGap(33, 33, 33)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btn_cancel)
                 .addContainerGap())
+            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                    .addContainerGap(421, Short.MAX_VALUE)
+                    .addComponent(jLabel9)
+                    .addGap(158, 158, 158)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -364,13 +384,179 @@ public class jmainclient extends javax.swing.JFrame {
 
     private void btn_downloadfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_downloadfileActionPerformed
         // TODO add your handling code here:
-        
+        if(list_allfile.getModel().getSize() != 0){
+            if(list_allfile.getSelectedValue()!=null){
+                String value=list_allfile.getSelectedValue();
+                System.out.println(value);
+                // get path save
+                selectPathSave();
+                // thread gui nhan file vs server file
+                
+            }else{
+                Confim con= new Confim("Not choose file !!!");
+                con.setLocation(400,200);
+                con.setAlwaysOnTop(true);
+                con.setVisible(true);
+            }
+        }else{
+            Confim con= new Confim("Not files in list !!!");
+            con.setLocation(400,200);
+            con.setAlwaysOnTop(true);
+            con.setVisible(true);
+        }
     }//GEN-LAST:event_btn_downloadfileActionPerformed
 
     private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btn_cancelActionPerformed
 
+    class Send_Receive_File implements Runnable{
+
+         private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
+        private String ipServerFile;
+        private int portServerFile;
+        private String namefile;
+        private String destinationName;
+        private String sourceName;
+        private DatagramSocket clientSocket ;
+
+        public Send_Receive_File(String ipServerFile, int portServerFile, String namefile, String destinationName, String sourceName, DatagramSocket clientSocket) {
+            this.ipServerFile = ipServerFile;
+            this.portServerFile = portServerFile;
+            this.namefile = namefile;
+            this.destinationName = destinationName;
+            this.sourceName = sourceName;
+            this.clientSocket = clientSocket;
+        }
+        
+        
+        @Override
+        public void run() {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos;
+            try {
+                oos = new ObjectOutputStream(baos);
+                oos.writeChars(getNamefile());
+                DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
+                baos.toByteArray().length,InetAddress.getByName(getIpServerFile()), getPortServerFile());
+                getClientSocket().send(sendPacket); 
+                
+                
+            } catch (Exception ex) {
+                Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+
+        /**
+         * @return the ipServerFile
+         */
+        public String getIpServerFile() {
+            return ipServerFile;
+        }
+
+        /**
+         * @param ipServerFile the ipServerFile to set
+         */
+        public void setIpServerFile(String ipServerFile) {
+            this.ipServerFile = ipServerFile;
+        }
+
+        /**
+         * @return the portServerFile
+         */
+        public int getPortServerFile() {
+            return portServerFile;
+        }
+
+        /**
+         * @param portServerFile the portServerFile to set
+         */
+        public void setPortServerFile(int portServerFile) {
+            this.portServerFile = portServerFile;
+        }
+
+        /**
+         * @return the namefile
+         */
+        public String getNamefile() {
+            return namefile;
+        }
+
+        /**
+         * @param namefile the namefile to set
+         */
+        public void setNamefile(String namefile) {
+            this.namefile = namefile;
+        }
+
+        /**
+         * @return the destinationName
+         */
+        public String getDestinationName() {
+            return destinationName;
+        }
+
+        /**
+         * @param destinationName the destinationName to set
+         */
+        public void setDestinationName(String destinationName) {
+            this.destinationName = destinationName;
+        }
+
+        /**
+         * @return the sourceName
+         */
+        public String getSourceName() {
+            return sourceName;
+        }
+
+        /**
+         * @param sourceName the sourceName to set
+         */
+        public void setSourceName(String sourceName) {
+            this.sourceName = sourceName;
+        }
+
+        /**
+         * @return the clientSocket
+         */
+        public DatagramSocket getClientSocket() {
+            return clientSocket;
+        }
+
+        /**
+         * @param clientSocket the clientSocket to set
+         */
+        public void setClientSocket(DatagramSocket clientSocket) {
+            this.clientSocket = clientSocket;
+        }
+        
+    }
+            
+    void selectPathSave(){ 
+        JFileChooser chooser = new JFileChooser(); 
+        chooser.setCurrentDirectory(new java.io.File("."));
+        chooser.setDialogTitle("Choose Folde Save File");
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        //
+        // disable the "All files" option.
+        //
+        chooser.setAcceptAllFileFilterUsed(false);
+        //    
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
+          System.out.println("getCurrentDirectory(): " 
+             +  chooser.getCurrentDirectory());
+          System.out.println("getSelectedFile() : " 
+             +  chooser.getSelectedFile());
+             lab_path_save.setText(chooser.getSelectedFile().toString());    
+        }
+        else {
+          System.out.println("No Selection ");
+          lab_path_save.setText("No Selection");
+         }
+    }
+    
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
          if(outServerMasterStream != null){
@@ -428,11 +614,12 @@ public class jmainclient extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lab_ipclient;
+    private javax.swing.JLabel lab_path_save;
     private javax.swing.JList<String> list_allfile;
     private javax.swing.JList<String> list_process;
     private javax.swing.JTextField txt_ipservermas;

@@ -4,12 +4,16 @@ package serverfile;
 import comon.FileInfo;
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
@@ -61,7 +65,7 @@ public class jmainfileserver extends javax.swing.JFrame {
         txt_port.setText("");
         ipfileserver.setText(getIP());
         // random 5000 5999
-        lab_port.setText(getPort());
+
         txt_ipserver.setText(getIP());
         txt_port.setText("2222");
         lab_path.setText("No Selection");
@@ -96,8 +100,6 @@ public class jmainfileserver extends javax.swing.JFrame {
         list_file = new javax.swing.JList<>();
         brower = new javax.swing.JButton();
         lab_path = new javax.swing.JLabel();
-        lab_port = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("File server");
@@ -169,12 +171,6 @@ public class jmainfileserver extends javax.swing.JFrame {
         lab_path.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         lab_path.setText("D:/abc/cbf/");
 
-        lab_port.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        lab_port.setText("localhost");
-
-        jLabel7.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        jLabel7.setText("Port:");
-
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -197,13 +193,9 @@ public class jmainfileserver extends javax.swing.JFrame {
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(ipfileserver)
-                                .addGap(108, 108, 108)
-                                .addComponent(jLabel7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(lab_port))
+                                .addComponent(ipfileserver))
                             .addComponent(error, javax.swing.GroupLayout.PREFERRED_SIZE, 319, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 163, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
@@ -227,9 +219,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                 .addComponent(jLabel4)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(ipfileserver, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7)
-                    .addComponent(lab_port, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(ipfileserver, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
                 .addGap(12, 12, 12)
@@ -288,7 +278,6 @@ public class jmainfileserver extends javax.swing.JFrame {
                    Thread serverStart = new Thread(new ServerStart());
                    serverStart.start();
                    fileinfo.setIpServerFile(ipfileserver.getText());
-                   fileinfo.setPortServerFile(Integer.valueOf(lab_port.getText()));
                    fileinfo.toString();
                 }
             }else{
@@ -491,11 +480,10 @@ public class jmainfileserver extends javax.swing.JFrame {
                 error.setForeground(Color.GREEN);
                 System.out.println("Ok ket noi thanh cong");
                 
-                // ket noi UDP vs client
-                while (true) {                    
-                  break;  
-                } 
-                
+//                // ket noi UDP vs client                 
+//                  DatagramSocket serverSocket = new DatagramSocket(Integer.valueOf(lab_port.getText()));
+//                  System.out.println("Server is opened on port " + lab_port.getText());
+//                
                 
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
@@ -508,6 +496,33 @@ public class jmainfileserver extends javax.swing.JFrame {
         }
     }
     
+    // thread send file to client 
+     class Send_Receive_File implements Runnable{
+        // 50 byte for moi lan send file
+        private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
+        // port send client 
+        private static final int portClientFile=7777;
+        private DatagramSocket ServerSocket ;
+ 
+        @Override
+        public void run() {
+            try {
+                // tao goi de nhan 
+                byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                // nhan du lieu
+                ServerSocket.receive(receivePacket);
+                String ipClientFile=receivePacket.getAddress().toString();
+                ByteArrayInputStream bais = new ByteArrayInputStream(
+                receivePacket.getData());
+                BufferedReader bufin= new BufferedReader(new InputStreamReader(bais));
+                System.out.println(ipClientFile+" / "+bufin.readLine());
+            } catch (Exception ex) {
+                Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
     
     // ServerMasterHandler
      public class ServerMasterHandler implements Runnable	
@@ -579,11 +594,9 @@ public class jmainfileserver extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lab_path;
-    private javax.swing.JLabel lab_port;
     private javax.swing.JList<String> list_file;
     private javax.swing.JTextField txt_ipserver;
     private javax.swing.JTextField txt_port;

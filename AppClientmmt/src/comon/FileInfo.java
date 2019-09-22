@@ -17,17 +17,15 @@ public class FileInfo implements Serializable{
     private static final long serialVersionUID = 1L;
     private String destinationDirectory;
     private String ipServerFile;
-    private int portServerFile;
     private List<String>lsName;
     private int status;
 
     public FileInfo() {
     }
 
-    public FileInfo(String destinationDirectory, String ipServerFile, int portServerFile, List<String> lsName, int status) {
+    public FileInfo(String destinationDirectory, String ipServerFile, List<String> lsName, int status) {
         this.destinationDirectory = destinationDirectory;
         this.ipServerFile = ipServerFile;
-        this.portServerFile = portServerFile;
         this.lsName = lsName;
         this.status = status;
     }
@@ -42,10 +40,7 @@ public class FileInfo implements Serializable{
         return ipServerFile;
     }
 
-    public int getPortServerFile() {
-        return portServerFile;
-    }
-
+    
     public List<String> getLsName() {
         return lsName;
     }
@@ -64,9 +59,7 @@ public class FileInfo implements Serializable{
         this.ipServerFile = ipServerFile;
     }
 
-    public void setPortServerFile(int portServerFile) {
-        this.portServerFile = portServerFile;
-    }
+    
 
     public void setLsName(List<String> lsName) {
         this.lsName = lsName;

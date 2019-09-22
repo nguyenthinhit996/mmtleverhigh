@@ -262,7 +262,6 @@ public class jmainserver extends javax.swing.JFrame {
          if(act==-1){
              txt_area.append("------- Lost a file info---------\n");
              txt_area.append(f.getIpServerFile()+"\n");
-             txt_area.append(f.getPortServerFile()+"\n");
              txt_area.append(f.getDestinationDirectory()+"\n");
              for(String i:f.getLsName()){
                  txt_area.append(i+"\n");
@@ -273,8 +272,6 @@ public class jmainserver extends javax.swing.JFrame {
              txt_area.append("------- Add a file info---------\n");
              txt_area.append("/n");
              txt_area.append(f.getIpServerFile());
-             txt_area.append("/n");
-             txt_area.append(String.valueOf(f.getPortServerFile()));
              txt_area.append("/n");
              txt_area.append(f.getDestinationDirectory());
              for(String i:f.getLsName()){
@@ -427,7 +424,7 @@ public class jmainserver extends javax.swing.JFrame {
                         while(in.hasNext()){
                             FileInfo f=in.next();
                             if(f.getIpServerFile().equals(fileInfo.getIpServerFile())
-                            && fileInfo.getPortServerFile() == f.getPortServerFile()){
+                            && fileInfo.getDestinationDirectory() == f.getDestinationDirectory()){
                                in.remove();
                                printFileConnect(0, f);
                            }
@@ -538,7 +535,6 @@ public class jmainserver extends javax.swing.JFrame {
          if(act==0){
              txt_area.append("------- Lost a file info---------\n");
              txt_area.append(f.getIpServerFile()+"\n");
-             txt_area.append(f.getPortServerFile()+"\n");
              txt_area.append(f.getDestinationDirectory()+"\n");
              for(String i:f.getLsName()){
                  txt_area.append(i+"\n");
@@ -548,7 +544,6 @@ public class jmainserver extends javax.swing.JFrame {
          if(act==1){
              txt_area.append("------- Add a file info---------\n");
              txt_area.append(f.getIpServerFile()+"\n");
-             txt_area.append(f.getPortServerFile()+"\n");
              txt_area.append(f.getDestinationDirectory()+"\n");
              for(String i:f.getLsName()){
                  txt_area.append(i+"\n");

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package appservermmt;
+package appclientmmt;
 
 /**
  *
@@ -15,8 +15,8 @@ public class Confim extends javax.swing.JFrame {
      * Creates new form Confim
      */
     public Confim(String mess) {
-        lab_mess.setText(mess);
         initComponents();
+        lab_mess.setText(mess);
     }
     
     public Confim() {
