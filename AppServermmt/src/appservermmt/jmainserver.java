@@ -319,7 +319,7 @@ public class jmainserver extends javax.swing.JFrame {
                                         Thread listener = new Thread(new ClientHandler(Sock, out));
                                         listener.start();
                                         clientOutputStreams.add(out);
-                                        txt_area.append("Got a connection client. \n");
+                                        txt_area.append("Got a connection client. "+Sock.getInetAddress()+"\n");
                                     }
                                     else{
 
@@ -327,7 +327,7 @@ public class jmainserver extends javax.swing.JFrame {
                                         Thread listener = new Thread(new FileServerHandler(Sock, writer));
                                         listener.start();
                                         fileServerOutputStreams.add(writer);
-                                        txt_area.append("Got a connection FileServer. \n"); 
+                                        txt_area.append("Got a connection FileServer. "+Sock.getInetAddress()+"\n"); 
                                     }
                                 }
 
@@ -375,7 +375,7 @@ public class jmainserver extends javax.swing.JFrame {
                     while ((message = inClient.readLine()) != null) 
                     {
                         if(message.equals("exit")){
-                            txt_area.append("Lost conect Client " + message + "\n");
+                            txt_area.append("Lost conect Client " + message +sockClient.getInetAddress() +"\n");
                             clientOutputStreams.remove(Outclient);
                             Thread.currentThread().interrupt();
                         }
@@ -383,7 +383,7 @@ public class jmainserver extends javax.swing.JFrame {
              } 
              catch (Exception ex) 
              {
-                txt_area.append("Lost conect Client\n");
+                txt_area.append("Lost conect Client "+sockClient.getInetAddress()+"\n");
                 ex.printStackTrace();
                 clientOutputStreams.remove(Outclient);
              }
@@ -445,7 +445,7 @@ public class jmainserver extends javax.swing.JFrame {
              } 
              catch (Exception ex) 
              {
-                txt_area.append("Lost a connection FileServer. \n");
+                txt_area.append("Lost a connection FileServer. "+sockFileServer.getInetAddress()+"\n");
                 ex.printStackTrace();
                 fileServerOutputStreams.remove(outFileServer);
              }
