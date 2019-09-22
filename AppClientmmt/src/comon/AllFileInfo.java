@@ -15,6 +15,14 @@ import java.util.List;
  */
 public class AllFileInfo implements Serializable{
     private static long serialVersionUID = 1L;
+
+    public static void setSerialVersionUID(long serialVersionUID) {
+        AllFileInfo.serialVersionUID = serialVersionUID;
+    }
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
     // 1 live , 0 off
     private int status;
     private List<FileInfo> lsFile;
@@ -22,19 +30,7 @@ public class AllFileInfo implements Serializable{
     public AllFileInfo() {
     }
 
-    /**
-     * @return the serialVersionUID
-     */
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    /**
-     * @param aSerialVersionUID the serialVersionUID to set
-     */
-    public static void setSerialVersionUID(long aSerialVersionUID) {
-        serialVersionUID = aSerialVersionUID;
-    }
+     
 
     /**
      * @return the status

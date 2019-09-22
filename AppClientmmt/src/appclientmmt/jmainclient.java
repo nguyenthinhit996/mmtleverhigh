@@ -112,7 +112,6 @@ public class jmainclient extends javax.swing.JFrame {
                        list_allfile.setModel(model);
                     }else{
                         DefaultListModel model=new DefaultListModel();
-                        model.removeAllElements();
                        list_allfile.setModel(model);
                        allf.setLsFile(null);
                        error.setText("Error connect with server");
@@ -122,7 +121,6 @@ public class jmainclient extends javax.swing.JFrame {
                     }
                 }
                 System.out.println("Ok ket noi thanh cong");
-                 
             } catch (IOException ex) {
                 error.setText("Connect Error");
                 error.setForeground(Color.red);

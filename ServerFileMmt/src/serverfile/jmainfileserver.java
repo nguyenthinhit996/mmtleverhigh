@@ -362,16 +362,15 @@ public class jmainfileserver extends javax.swing.JFrame {
         // gui gat ket noi server master
         if(ObjectOutputStreamServerMaster != null){
            // xoa object nay ben server master
-           FileInfo ff=new FileInfo();
-           ff.setIpServerFile(fileinfo.getIpServerFile());
-           ff.setPortServerFile(fileinfo.getPortServerFile());
-           ff.setStatus(0);
+           fileinfo.setStatus(0);
             try {
-                ObjectOutputStreamServerMaster.writeObject(ff);
-                ObjectOutputStreamServerMaster.flush();
+                ObjectOutputStreamServerMaster.reset();
+                ObjectOutputStreamServerMaster.writeObject(fileinfo);
             } catch (IOException ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
+           
+
         }
         
     }//GEN-LAST:event_formWindowClosing
