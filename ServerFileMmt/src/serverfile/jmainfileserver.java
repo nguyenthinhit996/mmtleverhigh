@@ -497,7 +497,8 @@ public class jmainfileserver extends javax.swing.JFrame {
                 
 //                // ket noi UDP vs client                 
                   DatagramSocket serverSocket = new DatagramSocket(Integer.valueOf(lab_port.getText()));
-      
+                  Thread abc= new Thread(new Send_Receive_File(serverSocket));
+                  abc.start();
                 
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
@@ -514,11 +515,9 @@ public class jmainfileserver extends javax.swing.JFrame {
      class Send_Receive_File implements Runnable{
         // 50 byte for moi lan send file
         private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
-        private String ipclient;
         private DatagramSocket ServerSocket ;
 
-        public Send_Receive_File(String ipclient, DatagramSocket ServerSocket) {
-            this.ipclient = ipclient;
+        public Send_Receive_File( DatagramSocket ServerSocket) {
             this.ServerSocket = ServerSocket;
         }
  
@@ -529,13 +528,17 @@ public class jmainfileserver extends javax.swing.JFrame {
                 // tao goi de nhan 
                 byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                // nhan du lieu
-                getServerSocket().receive(receivePacket);
-                String ipClientFile=receivePacket.getAddress().toString();
-                ByteArrayInputStream bais = new ByteArrayInputStream(
-                receivePacket.getData());
-                BufferedReader bufin= new BufferedReader(new InputStreamReader(bais));
-                System.out.println(ipClientFile+" / "+bufin.readLine());
+                  
+                while(true){
+                     // nhan du lieu
+                    getServerSocket().receive(receivePacket);
+                    String ipClientFile=receivePacket.getAddress().toString();
+                    ByteArrayInputStream bais = new ByteArrayInputStream(
+                    receivePacket.getData());
+                    ObjectInputStream ob= new ObjectInputStream(bais);
+                    System.out.println("IP: "+ipClientFile+" data: "+ob.readObject());   
+                }
+                
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -543,20 +546,7 @@ public class jmainfileserver extends javax.swing.JFrame {
 
          
 
-        /**
-         * @return the ipclient
-         */
-        public String getIpclient() {
-            return ipclient;
-        }
-
-        /**
-         * @param ipclient the ipclient to set
-         */
-        public void setIpclient(String ipclient) {
-            this.ipclient = ipclient;
-        }
-
+        
         /**
          * @return the ServerSocket
          */
