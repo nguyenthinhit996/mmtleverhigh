@@ -5,9 +5,10 @@
  */
 package appservermmt;
 
+import comon.FileInfo;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -17,6 +18,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,8 +28,16 @@ import java.util.logging.Logger;
  */
 public class jmainserver extends javax.swing.JFrame {
 
+    // gui ver fileserver if shutdown
     ArrayList clientOutputStreams;
+    
+    // gui ver fileserver if shutdown
     ArrayList fileServerOutputStreams;
+    
+    // list file
+    List<FileInfo> listFile= new ArrayList<>();
+    
+    
     String ip =getIP();
     int port=2222;
     
@@ -89,6 +99,7 @@ public class jmainserver extends javax.swing.JFrame {
         lab_ipservermaster.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         lab_ipservermaster.setText("localhost");
 
+        txt_area.setEditable(false);
         txt_area.setColumns(20);
         txt_area.setRows(5);
         jScrollPane1.setViewportView(txt_area);
@@ -162,7 +173,7 @@ public class jmainserver extends javax.swing.JFrame {
                 .addGap(12, 12, 12)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -244,6 +255,32 @@ public class jmainserver extends javax.swing.JFrame {
 
     public class ServerStart implements Runnable 
     {
+        void printFileConnect(int act,FileInfo f){
+         if(act==-1){
+             txt_area.append("------- Lost a file info---------\n");
+             txt_area.append(f.getIpServerFile()+"\n");
+             txt_area.append(f.getPortServerFile()+"\n");
+             txt_area.append(f.getDestinationDirectory()+"\n");
+             for(String i:f.getLsName()){
+                 txt_area.append(i+"\n");
+             }
+             txt_area.append("------- Lost a file info---------\n");
+         }
+         if(act==1){
+             txt_area.append("------- Add a file info---------\n");
+             txt_area.append("/n");
+             txt_area.append(f.getIpServerFile());
+             txt_area.append("/n");
+             txt_area.append(String.valueOf(f.getPortServerFile()));
+             txt_area.append("/n");
+             txt_area.append(f.getDestinationDirectory());
+             for(String i:f.getLsName()){
+                 txt_area.append(i);
+                 txt_area.append("/n");
+             }
+             txt_area.append("------- Add a file info---------\n");
+         }
+     }
         @Override
         public void run() 
         {
@@ -252,8 +289,9 @@ public class jmainserver extends javax.swing.JFrame {
 
             try 
             {
+                // server for serverfile
                 ServerSocket serverSock = new ServerSocket(2222);
-
+                
                 while (true) 
                 {
 				Socket Sock = serverSock.accept();
@@ -271,13 +309,12 @@ public class jmainserver extends javax.swing.JFrame {
                                         txt_area.append("Got a connection client. \n");
                                     }
                                     else{
-                                         
+
                                         // tao thread file server
                                         Thread listener = new Thread(new FileServerHandler(Sock, writer));
                                         listener.start();
                                         fileServerOutputStreams.add(writer);
-                                        txt_area.append("Got a connection FileServer. \n");
-                                        
+                                        txt_area.append("Got a connection FileServer. \n"); 
                                     }
                                 }
 
@@ -331,21 +368,20 @@ public class jmainserver extends javax.swing.JFrame {
                         }
                     }
              } 
-             catch (SocketException ex) 
+             catch (Exception ex) 
              {
                 txt_area.append("Lost conect Client\n");
                 ex.printStackTrace();
                 clientOutputStreams.remove(Outclient);
-             } catch (IOException ex) { 
-               Logger.getLogger(jmainserver.class.getName()).log(Level.SEVERE, null, ex);
-           } 
+             }
 	} 
     }
     
     // thread file server
     public class FileServerHandler implements Runnable	
     {
-       BufferedReader inFileServer;
+                                        
+       ObjectInputStream inFileServer;
        Socket sockFileServer;
        PrintWriter outFileServer;
 
@@ -355,8 +391,7 @@ public class jmainserver extends javax.swing.JFrame {
             try 
             {
                 sockFileServer = Socket;
-                InputStreamReader isReader = new InputStreamReader(sockFileServer.getInputStream());
-                inFileServer = new BufferedReader(isReader);
+                inFileServer = new ObjectInputStream(sockFileServer.getInputStream());
             }
             catch (Exception ex) 
             {
@@ -368,17 +403,29 @@ public class jmainserver extends javax.swing.JFrame {
        @Override
        public void run() 
        {
-            String message ;
-            String[] data;
+            
 
             try 
             {
-                while ((message = inFileServer.readLine()) != null) 
-                {
-                    txt_area.append("Lost a connection FileServer " + message + "\n");
-                    if(message.equals("exit")){
+                FileInfo fileInfo;
+                while ( (fileInfo=(FileInfo) inFileServer.readObject()) != null) 
+                {     
+                    if(fileInfo.getStatus()==0){
+                       
+                        Iterator<FileInfo> in=listFile.iterator();
+                        while(in.hasNext()){
+                            FileInfo f=in.next();
+                            if(f.getIpServerFile().equals(fileInfo.getIpServerFile())
+                            && fileInfo.getPortServerFile() == f.getPortServerFile()){
+                               in.remove();
+                               printFileConnect(0, f);
+                           }
+                        }
                         fileServerOutputStreams.remove(outFileServer);
                         Thread.currentThread().interrupt();
+                    }else{
+                        listFile.add(fileInfo);
+                        printFileConnect(1, fileInfo);
                     }
                 } 
              } 
@@ -488,5 +535,28 @@ public class jmainserver extends javax.swing.JFrame {
           Thread startSer= new Thread(new ServerStart());
           startSer.start();
           txt_area.append("Server is running...\n");
+     }
+     
+     void printFileConnect(int act,FileInfo f){
+         if(act==0){
+             txt_area.append("------- Lost a file info---------\n");
+             txt_area.append(f.getIpServerFile()+"\n");
+             txt_area.append(f.getPortServerFile()+"\n");
+             txt_area.append(f.getDestinationDirectory()+"\n");
+             for(String i:f.getLsName()){
+                 txt_area.append(i+"\n");
+             }
+             txt_area.append("------- Lost a file info---------\n");
+         }
+         if(act==1){
+             txt_area.append("------- Add a file info---------\n");
+             txt_area.append(f.getIpServerFile()+"\n");
+             txt_area.append(f.getPortServerFile()+"\n");
+             txt_area.append(f.getDestinationDirectory()+"\n");
+             for(String i:f.getLsName()){
+                 txt_area.append(i+"\n");
+             }
+             txt_area.append("------- Add a file info---------\n");
+         }
      }
 }
