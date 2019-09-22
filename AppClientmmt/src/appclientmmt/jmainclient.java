@@ -5,18 +5,21 @@
  */
 package appclientmmt;
 
+import comon.AllFileInfo;
+import comon.FileInfo;
 import java.awt.Color;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -26,8 +29,11 @@ import org.apache.commons.lang3.StringUtils;
 public class jmainclient extends javax.swing.JFrame {
 
     
-      
+     // send notification when connect or exit connect to server master
      PrintWriter outServerMasterStream;
+     
+     // all file 
+     AllFileInfo allf;
      
      // is connect servermaster
      boolean isConnectServerMaster=false;
@@ -40,6 +46,12 @@ public class jmainclient extends javax.swing.JFrame {
         lab_ipclient.setText(getIP());
         txt_ipservermas.setText(getIP());
         txt_portmas.setText("2222");
+        
+        // update list all file va list processs
+         DefaultListModel model=new DefaultListModel();
+         model.removeAllElements();
+        list_allfile.setModel(model);
+        list_process.setModel(model);
     }
 
     String getIP()
@@ -84,13 +96,25 @@ public class jmainclient extends javax.swing.JFrame {
                 error.setText("Connect success ");
                 error.setVisible(true);
                 error.setForeground(Color.GREEN);
-                // thread lang nghe ket noi tu server
-                String message;
-                InputStreamReader isReader = new InputStreamReader(sock.getInputStream());
-                BufferedReader inFileServer = new BufferedReader(isReader);
-                while ((message = inFileServer.readLine()) != null) 
+                // thread lang nghe ket noi tu server nhan thong tin all file
+                
+                ObjectInputStream input= new ObjectInputStream(sock.getInputStream());
+                while ((allf =(AllFileInfo) input.readObject()) != null) 
                 {
-                    if(message.equals("exitservermaster")){
+                    if(allf.getStatus()==1){
+                        DefaultListModel model=new DefaultListModel();
+                        for(FileInfo i:allf.getLsFile()){
+                           for(String j:i.getLsName()){
+                               String in=i.getIpServerFile()+"/"+i.getPortServerFile()+j;
+                                model.addElement(in);
+                           }
+                        }
+                       list_allfile.setModel(model);
+                    }else{
+                        DefaultListModel model=new DefaultListModel();
+                        model.removeAllElements();
+                       list_allfile.setModel(model);
+                       allf.setLsFile(null);
                        error.setText("Error connect with server");
                        error.setForeground(Color.red);
                        error.setVisible(true);
@@ -105,6 +129,8 @@ public class jmainclient extends javax.swing.JFrame {
                 error.setVisible(true); 
                 isConnectServerMaster=false;
                 Thread.currentThread().interrupt(); 
+            } catch (ClassNotFoundException ex) {
+                Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -131,9 +157,9 @@ public class jmainclient extends javax.swing.JFrame {
         txt_ipservermas = new javax.swing.JTextField();
         error = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        list_process = new javax.swing.JList<>();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList2 = new javax.swing.JList<>();
+        list_allfile = new javax.swing.JList<>();
         savescript3 = new javax.swing.JButton();
         savescript1 = new javax.swing.JButton();
         jLabel8 = new javax.swing.JLabel();
@@ -188,19 +214,19 @@ public class jmainclient extends javax.swing.JFrame {
         error.setForeground(new java.awt.Color(171, 22, 22));
         error.setText("Error connect");
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+        list_process.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane1.setViewportView(jList1);
+        jScrollPane1.setViewportView(list_process);
 
-        jList2.setModel(new javax.swing.AbstractListModel<String>() {
+        list_allfile.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane2.setViewportView(jList2);
+        jScrollPane2.setViewportView(list_allfile);
 
         savescript3.setBackground(new java.awt.Color(83, 136, 53));
         savescript3.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
@@ -294,7 +320,7 @@ public class jmainclient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel8)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(savescript1)
                 .addContainerGap())
@@ -399,12 +425,12 @@ public class jmainclient extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JList<String> jList1;
-    private javax.swing.JList<String> jList2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel lab_ipclient;
+    private javax.swing.JList<String> list_allfile;
+    private javax.swing.JList<String> list_process;
     private javax.swing.JButton savescript1;
     private javax.swing.JButton savescript3;
     private javax.swing.JTextField txt_ipservermas;

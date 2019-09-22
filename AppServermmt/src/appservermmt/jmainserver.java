@@ -5,10 +5,12 @@
  */
 package appservermmt;
 
+import comon.AllFileInfo;
 import comon.FileInfo;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -302,10 +304,18 @@ public class jmainserver extends javax.swing.JFrame {
                                 String identity;
                                 if((identity = reader.readLine()) != null){
                                     if(identity.equals("client")){
+                                        // send all infor files to client
+                                        ObjectOutputStream  out= new ObjectOutputStream(Sock.getOutputStream());
+                                        AllFileInfo allf= new AllFileInfo();
+                                        allf.setLsFile(listFile);
+                                        allf.setStatus(1);
+                                        out.writeObject(allf);
+                                        out.flush();
+                                        
                                         // tao thread client
-                                        Thread listener = new Thread(new ClientHandler(Sock, writer));
+                                        Thread listener = new Thread(new ClientHandler(Sock, out));
                                         listener.start();
-                                        clientOutputStreams.add(writer);
+                                        clientOutputStreams.add(out);
                                         txt_area.append("Got a connection client. \n");
                                     }
                                     else{
@@ -333,9 +343,9 @@ public class jmainserver extends javax.swing.JFrame {
     {
        BufferedReader inClient;
        Socket sockClient;
-       PrintWriter Outclient;
+       ObjectOutputStream Outclient;
 
-       public ClientHandler(Socket clientSocket, PrintWriter out) 
+       public ClientHandler(Socket clientSocket, ObjectOutputStream out) 
        {
             Outclient = out;
             try 
