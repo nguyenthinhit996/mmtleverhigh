@@ -41,6 +41,10 @@ public class jmainclient extends javax.swing.JFrame {
      
      // is connect servermaster
      boolean isConnectServerMaster=false;
+     
+    // get clientddocket 
+    DatagramSocket clientSocket=null;
+     
     /**
      * Creates new form jmainserver
      */
@@ -390,11 +394,13 @@ public class jmainclient extends javax.swing.JFrame {
                 System.out.println(value);
                 // get path save
                 selectPathSave();
-                String[] spl=value.split("|");
-                DatagramSocket clientSocket=null;
+                String regex="\\|";
+                String[] spl=value.split(regex);
                 try {
-                     clientSocket= new DatagramSocket(Integer.valueOf(spl[1]));
-                } catch (SocketException ex) {
+                    if(clientSocket == null){
+                        clientSocket= new DatagramSocket(Integer.valueOf(spl[1]));
+                    }                    
+                } catch (Exception ex) {
                     Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 // thread gui nhan file vs server file
@@ -442,11 +448,13 @@ public class jmainclient extends javax.swing.JFrame {
         
         @Override
         public void run() {
+            
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos;
             try {
+                String name=getNamefile();
                 oos = new ObjectOutputStream(baos);
-                oos.writeChars(getNamefile());
+                oos.writeObject(name);
                 DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
                 baos.toByteArray().length,InetAddress.getByName(getIpServerFile()), getPortServerFile());
                 getClientSocket().send(sendPacket); 
