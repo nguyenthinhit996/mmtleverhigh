@@ -514,10 +514,15 @@ public class jmainfileserver extends javax.swing.JFrame {
      class Send_Receive_File implements Runnable{
         // 50 byte for moi lan send file
         private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
-        // port send client 
-        private static final int portClientFile=7777;
+        private String ipclient;
         private DatagramSocket ServerSocket ;
+
+        public Send_Receive_File(String ipclient, DatagramSocket ServerSocket) {
+            this.ipclient = ipclient;
+            this.ServerSocket = ServerSocket;
+        }
  
+        
         @Override
         public void run() {
             try {
@@ -525,7 +530,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                 byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 // nhan du lieu
-                ServerSocket.receive(receivePacket);
+                getServerSocket().receive(receivePacket);
                 String ipClientFile=receivePacket.getAddress().toString();
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                 receivePacket.getData());
@@ -534,6 +539,36 @@ public class jmainfileserver extends javax.swing.JFrame {
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+
+         
+
+        /**
+         * @return the ipclient
+         */
+        public String getIpclient() {
+            return ipclient;
+        }
+
+        /**
+         * @param ipclient the ipclient to set
+         */
+        public void setIpclient(String ipclient) {
+            this.ipclient = ipclient;
+        }
+
+        /**
+         * @return the ServerSocket
+         */
+        public DatagramSocket getServerSocket() {
+            return ServerSocket;
+        }
+
+        /**
+         * @param ServerSocket the ServerSocket to set
+         */
+        public void setServerSocket(DatagramSocket ServerSocket) {
+            this.ServerSocket = ServerSocket;
         }
 
     }

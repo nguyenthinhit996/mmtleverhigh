@@ -390,7 +390,17 @@ public class jmainclient extends javax.swing.JFrame {
                 System.out.println(value);
                 // get path save
                 selectPathSave();
+                String[] spl=value.split("|");
+                DatagramSocket clientSocket=null;
+                try {
+                     clientSocket= new DatagramSocket(Integer.valueOf(spl[1]));
+                } catch (SocketException ex) {
+                    Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 // thread gui nhan file vs server file
+                Thread a= new Thread(new Send_Receive_File(spl[0],Integer.valueOf(spl[1]),
+                spl[2],lab_path_save.getText(),clientSocket));
+                a.start();
                 
                 
             }else{
@@ -418,15 +428,14 @@ public class jmainclient extends javax.swing.JFrame {
         private int portServerFile;
         private String namefile;
         private String destinationName;
-        private String sourceName;
         private DatagramSocket clientSocket ;
 
-        public Send_Receive_File(String ipServerFile, int portServerFile, String namefile, String destinationName, String sourceName, DatagramSocket clientSocket) {
+        public Send_Receive_File(String ipServerFile, int portServerFile, String namefile, 
+                String destinationName, DatagramSocket clientSocket) {
             this.ipServerFile = ipServerFile;
             this.portServerFile = portServerFile;
             this.namefile = namefile;
             this.destinationName = destinationName;
-            this.sourceName = sourceName;
             this.clientSocket = clientSocket;
         }
         
@@ -505,19 +514,7 @@ public class jmainclient extends javax.swing.JFrame {
             this.destinationName = destinationName;
         }
 
-        /**
-         * @return the sourceName
-         */
-        public String getSourceName() {
-            return sourceName;
-        }
-
-        /**
-         * @param sourceName the sourceName to set
-         */
-        public void setSourceName(String sourceName) {
-            this.sourceName = sourceName;
-        }
+        
 
         /**
          * @return the clientSocket
