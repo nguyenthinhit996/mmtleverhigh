@@ -361,9 +361,14 @@ public class jmainfileserver extends javax.swing.JFrame {
         // TODO add your handling code here:
         // gui gat ket noi server master
         if(ObjectOutputStreamServerMaster != null){
-           fileinfo.setStatus(0);
+           // xoa object nay ben server master
+           FileInfo ff=new FileInfo();
+           ff.setIpServerFile(fileinfo.getIpServerFile());
+           ff.setPortServerFile(fileinfo.getPortServerFile());
+           ff.setStatus(0);
             try {
-                ObjectOutputStreamServerMaster.writeObject(fileinfo);
+                ObjectOutputStreamServerMaster.writeObject(ff);
+                ObjectOutputStreamServerMaster.flush();
             } catch (IOException ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -475,6 +480,8 @@ public class jmainfileserver extends javax.swing.JFrame {
                 fileinfo.setStatus(1);
                 ObjectOutputStreamServerMaster =new ObjectOutputStream(sock.getOutputStream());
                 ObjectOutputStreamServerMaster.writeObject(fileinfo);
+                ObjectOutputStreamServerMaster.flush();
+                 
                 
                 // thread lang nghe ket noi tu server cho truong hop ngat ket noi
                 Thread serverMasterHandler = new Thread( new ServerMasterHandler(sock));
