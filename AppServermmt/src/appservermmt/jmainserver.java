@@ -312,7 +312,7 @@ public class jmainserver extends javax.swing.JFrame {
                                             allf.setLsFile(listFile);
                                             allf.setStatus(1);
                                             out.writeObject(allf);
-                                            out.flush();
+                                            out.reset();
                                         }
                                         
                                         // tao thread client
@@ -416,8 +416,6 @@ public class jmainserver extends javax.swing.JFrame {
        @Override
        public void run() 
        {
-            
-
             try 
             {
                 FileInfo fileInfo;
@@ -434,13 +432,15 @@ public class jmainserver extends javax.swing.JFrame {
                                printFileConnect(0, f);
                            }
                         }
+                        tellEveryClientShutDownOrUpdateAllFile(1);
                         fileServerOutputStreams.remove(outFileServer);
                         Thread.currentThread().interrupt();
                     }else{
                         listFile.add(fileInfo);
                         printFileConnect(1, fileInfo);
+                        tellEveryClientShutDownOrUpdateAllFile(1);
                     }
-                    tellEveryClientShutDownOrUpdateAllFile(1);
+                   
                 } 
              } 
              catch (Exception ex) 
@@ -448,7 +448,7 @@ public class jmainserver extends javax.swing.JFrame {
                 txt_area.append("Lost a connection FileServer. \n");
                 ex.printStackTrace();
                 fileServerOutputStreams.remove(outFileServer);
-             } 
+             }
 	} 
     }
      
@@ -489,19 +489,11 @@ public class jmainserver extends javax.swing.JFrame {
                 try 
                 {  
                     ObjectOutputStream  out=(ObjectOutputStream) client.next();
-                    //update
-                    if(act ==1){
-                        AllFileInfo a= new AllFileInfo();
-                        a.setLsFile(listFile);
-                        a.setStatus(1);
-                        out.writeObject(a);
-                        out.flush(); 
-                    }else{
-                        AllFileInfo a= new AllFileInfo();
-                        a.setStatus(0);
-                        out.writeObject(a);
-                        out.flush();  
-                    }
+                    AllFileInfo abc=new AllFileInfo(act, listFile);
+                    
+                    out.writeObject(abc);
+                    out.reset();
+                    abc=null;
                 } 
                 catch (Exception ex) 
                 {
