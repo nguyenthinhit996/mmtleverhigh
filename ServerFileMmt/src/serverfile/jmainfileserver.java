@@ -1,13 +1,18 @@
 package serverfile;
 
  
+import comon.FileDowInfo;
 import comon.FileInfo;
 import java.awt.Color;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -514,7 +519,8 @@ public class jmainfileserver extends javax.swing.JFrame {
     // thread send file to client 
      class Send_Receive_File implements Runnable{
         // 50 byte for moi lan send file
-        private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
+         private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
+        private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 62;
         private DatagramSocket ServerSocket ;
 
         public Send_Receive_File( DatagramSocket ServerSocket) {
@@ -535,8 +541,67 @@ public class jmainfileserver extends javax.swing.JFrame {
                     String ipClientFile=receivePacket.getAddress().toString();
                     ByteArrayInputStream bais = new ByteArrayInputStream(
                     receivePacket.getData());
-                    ObjectInputStream ob= new ObjectInputStream(bais);
-                    System.out.println("IP: "+ipClientFile+" data: "+ob.readObject());   
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    FileDowInfo filedownreceive=(FileDowInfo) ois.readObject();
+                    
+                    System.out.println("--------- get file cho ip ---------");
+                    System.out.println(ipClientFile+"/"+lab_port);
+                    System.out.println(filedownreceive.getNameFile());
+                    
+                    // get info file 
+                    File fileSend = new File(lab_path.getText()+filedownreceive.getNameFile());
+                    InputStream inputStream = new FileInputStream(fileSend);
+                    BufferedInputStream bis = new BufferedInputStream(inputStream);
+                    
+                    long fileLength = fileSend.length();
+                    int piecesOfFile = (int) (fileLength / PIECES_OF_FILE_SIZE);
+                    int lastByteLength = (int) (fileLength % PIECES_OF_FILE_SIZE);
+                    
+                    if (lastByteLength > 0) {
+                        piecesOfFile++;
+                    }
+                    filedownreceive.setSoluonggoi(piecesOfFile);
+                    
+                    // gui thong tin file cho client
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ObjectOutputStream oos;
+                    oos = new ObjectOutputStream(baos);
+                    oos.writeObject(filedownreceive);
+                    DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
+                    baos.toByteArray().length,InetAddress.getByName(ipClientFile),Integer.valueOf(lab_port.getText()));
+                    ServerSocket.send(sendPacket); 
+                    System.out.println("--------- get info max file cho ip ---------"+ filedownreceive.getSoluonggoi());
+                    
+                    
+                    int i=1;
+                    while (bis.read(receiveData, 0, PIECES_OF_FILE_SIZE) > 0) {
+                        FileDowInfo filedow= new FileDowInfo();
+                        filedow.setIpServerFile(ipfileserver.getText());
+                        filedow.setPortServer(Integer.valueOf(lab_port.getText()));
+                        filedow.setNameFile(filedownreceive.getNameFile());
+                        filedow.setSogoithu(i);
+                        filedow.setSoluonggoi(piecesOfFile);
+                        // gui thong tin den file server de down
+                        if(i==piecesOfFile){ // gui xong
+                            filedow.setStatus(3);
+                        }else{
+                            filedow.setStatus(2);
+                        }
+                        filedow.setDatafile(receiveData);
+                        oos.writeObject(filedownreceive);
+                        sendPacket = new DatagramPacket(baos.toByteArray(), 
+                        baos.toByteArray().length,InetAddress.getByName(ipClientFile),Integer.valueOf(lab_port.getText()));
+                        ServerSocket.send(sendPacket); 
+                        oos.reset();
+                        i++;
+                        if(i==piecesOfFile){
+                            receiveData = new byte[lastByteLength];
+                        }else{
+                            receiveData = new byte[PIECES_OF_FILE_SIZE];
+                        }
+                        System.out.println("---packe : "+i);
+                    }
+                    
                 }
                 
             } catch (Exception ex) {
@@ -544,9 +609,6 @@ public class jmainfileserver extends javax.swing.JFrame {
             }
         }
 
-         
-
-        
         /**
          * @return the ServerSocket
          */

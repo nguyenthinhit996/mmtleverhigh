@@ -6,9 +6,14 @@
 package appclientmmt;
 
 import comon.AllFileInfo;
+import comon.FileDowInfo;
 import comon.FileInfo;
 import java.awt.Color;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -19,7 +24,13 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -42,9 +53,8 @@ public class jmainclient extends javax.swing.JFrame {
      // is connect servermaster
      boolean isConnectServerMaster=false;
      
-    // get clientddocket 
-    DatagramSocket clientSocket=null;
-     
+    // moi fileserver is mot thread (DatagramSocket) co moi port
+     Map<Integer,DatagramSocket> mapDatagramSocket;
     /**
      * Creates new form jmainserver
      */
@@ -396,17 +406,28 @@ public class jmainclient extends javax.swing.JFrame {
                 selectPathSave();
                 String regex="\\|";
                 String[] spl=value.split(regex);
-                try {
-                    if(clientSocket == null){
-                        clientSocket= new DatagramSocket(Integer.valueOf(spl[1]));
-                    }                    
-                } catch (Exception ex) {
-                    Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+                // kiem tra port da duoc tao chua
+                if(mapDatagramSocket.containsKey(Integer.valueOf(spl[1]))){
+                    Thread a= new Thread(new Send_Receive_File(spl[0],Integer.valueOf(spl[1]),
+                    spl[2],lab_path_save.getText(),mapDatagramSocket.get(Integer.valueOf(spl[1]))));
+                    a.start();
+                    
+                }else{
+                    // tao DatagramSocket clientSocket de gui nhan file
+                    int port=Integer.valueOf(spl[1]);
+                    try{
+                        DatagramSocket clientSocket= new DatagramSocket(port);
+                        mapDatagramSocket.put(port, clientSocket);
+                        Thread a= new Thread(new Send_Receive_File(spl[0],Integer.valueOf(spl[1]),
+                        spl[2],lab_path_save.getText(),clientSocket));
+                        a.start();
+                    } catch (Exception ex) {
+                        Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
+                
                 // thread gui nhan file vs server file
-                Thread a= new Thread(new Send_Receive_File(spl[0],Integer.valueOf(spl[1]),
-                spl[2],lab_path_save.getText(),clientSocket));
-                a.start();
+                
                 
                 
             }else{
@@ -429,7 +450,7 @@ public class jmainclient extends javax.swing.JFrame {
 
     class Send_Receive_File implements Runnable{
 
-         private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
+        private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 62;
         private String ipServerFile;
         private int portServerFile;
         private String namefile;
@@ -452,13 +473,67 @@ public class jmainclient extends javax.swing.JFrame {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos;
             try {
-                String name=getNamefile();
+                FileDowInfo filedow= new FileDowInfo();
+                filedow.setIpServerFile(ipServerFile);
+                filedow.setPortServer(portServerFile);
+                filedow.setNameFile(namefile);
+                filedow.setSogoithu(0);
+                filedow.setSoluonggoi(0);
+                // gui thong tin den file server de down
+                filedow.setStatus(1);
+
                 oos = new ObjectOutputStream(baos);
-                oos.writeObject(name);
+                oos.writeObject(filedow);
                 DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
                 baos.toByteArray().length,InetAddress.getByName(getIpServerFile()), getPortServerFile());
                 getClientSocket().send(sendPacket); 
+
                 
+                // tao file
+                System.out.println("Create file...");
+                File fileRecetver= new File(destinationName + namefile);
+                BufferedOutputStream bos= new BufferedOutputStream(new FileOutputStream(fileRecetver));
+                System.out.println("Receiving nhan thong tin khich thuoch file...");
+                
+                // nhan thong tin khich thuoch file
+                byte[] receiveFileDownLoad = new byte[MAX_PIECES_OF_FILE_SIZE];
+                DatagramPacket receiveFileDownLoadPk=new DatagramPacket(receiveFileDownLoad, receiveFileDownLoad.length);
+                clientSocket.receive(receiveFileDownLoadPk);
+                 ByteArrayInputStream bais = new ByteArrayInputStream(
+                receiveFileDownLoadPk.getData());
+                ObjectInputStream ois = new ObjectInputStream(bais);
+                FileDowInfo filedownreceive=(FileDowInfo) ois.readObject();
+                
+                List<FileDowInfo> dsFiledownreceive= new ArrayList();
+                // nhan tat ca cac goi cua file
+                int sogoi=filedownreceive.getSoluonggoi();
+                while(true){
+                     byte[] receiveFileDownLoads = new byte[MAX_PIECES_OF_FILE_SIZE];
+                    DatagramPacket receiveFileDownLoadPks=new DatagramPacket(receiveFileDownLoads, receiveFileDownLoads.length);
+                    clientSocket.receive(receiveFileDownLoadPks);
+                     ByteArrayInputStream baiss = new ByteArrayInputStream(
+                    receiveFileDownLoadPks.getData());
+                    ObjectInputStream oiss = new ObjectInputStream(baiss);
+                    FileDowInfo filedownreceives=(FileDowInfo) oiss.readObject();
+                    dsFiledownreceive.add(filedownreceives);
+                    // status 3 gui file xong
+                    if(filedownreceives.getStatus()==3){
+                        break;
+                    }
+                }
+                
+                // keim tra 
+                if(dsFiledownreceive.size() != sogoi){
+                    System.out.println("Loii khong du goi");
+                }else{
+                    Collections.sort(dsFiledownreceive, new FiledownreceiveComparator());
+                    for(FileDowInfo  i : dsFiledownreceive){
+                        System.out.println(i.getSogoithu());
+                        bos.write(i.getDatafile(), 0,i.getDatafile().length );
+                        bos.flush();
+                        System.out.println("Ghi thanh cong");
+                    }
+                }  
                 
             } catch (Exception ex) {
                 Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
@@ -466,6 +541,18 @@ public class jmainclient extends javax.swing.JFrame {
             
         }
 
+        // sort 
+        class FiledownreceiveComparator implements Comparator<FileDowInfo> {
+            @Override
+            public int compare(FileDowInfo o1, FileDowInfo o2) {
+                if(o1.getSogoithu() > o2.getSogoithu())
+                {
+                    return 1;
+                }
+                return 0;
+        }}
+        
+        
         /**
          * @return the ipServerFile
          */
