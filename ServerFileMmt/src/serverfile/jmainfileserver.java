@@ -600,6 +600,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                             receiveData = new byte[PIECES_OF_FILE_SIZE];
                         }
                         System.out.println("---packe : "+i);
+                        Thread.sleep(50);
                     }
                     
                 }

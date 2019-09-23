@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author peter
  */
 public class FileDowInfo implements Serializable{
-    private static long serialVersionUID = 1L;
+    private final static long serialVersionUID = 1L;
     private String nameFile;
     private byte[] datafile; 
     private String ipServerFile;
@@ -24,7 +24,7 @@ public class FileDowInfo implements Serializable{
 
     public FileDowInfo() {
     }
-
+    
     public FileDowInfo(String nameFile, byte[] datafile, String ipServerFile, int portServer, int soluonggoi, int sogoithu, int status) {
         this.nameFile = nameFile;
         this.datafile = datafile;
@@ -35,20 +35,7 @@ public class FileDowInfo implements Serializable{
         this.status = status;
     }
 
-    /**
-     * @return the serialVersionUID
-     */
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
-    /**
-     * @param aSerialVersionUID the serialVersionUID to set
-     */
-    public static void setSerialVersionUID(long aSerialVersionUID) {
-        serialVersionUID = aSerialVersionUID;
-    }
-
+    
     /**
      * @return the nameFile
      */
@@ -146,6 +133,6 @@ public class FileDowInfo implements Serializable{
     public void setStatus(int status) {
         this.status = status;
     }
-
+    
     
 }
