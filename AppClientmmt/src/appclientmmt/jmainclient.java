@@ -448,7 +448,7 @@ public class jmainclient extends javax.swing.JFrame {
 
     class Send_Receive_File implements Runnable{
 
-        private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 62;
+        private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 63;
         private String ipServerFile;
         private int portServerFile;
         private String namefile;
@@ -498,7 +498,7 @@ public class jmainclient extends javax.swing.JFrame {
                 byte[] receiveFileDownLoad = new byte[MAX_PIECES_OF_FILE_SIZE];
                 DatagramPacket receiveFileDownLoadPk=new DatagramPacket(receiveFileDownLoad, receiveFileDownLoad.length);
                 clientSocket.receive(receiveFileDownLoadPk);
-                 ByteArrayInputStream bais = new ByteArrayInputStream(
+                ByteArrayInputStream bais = new ByteArrayInputStream(
                 receiveFileDownLoadPk.getData());
                 ObjectInputStream ois = new ObjectInputStream(bais);
                 FileDowInfo filedownreceive=(FileDowInfo) ois.readObject();
@@ -506,6 +506,7 @@ public class jmainclient extends javax.swing.JFrame {
                 List<FileDowInfo> dsFiledownreceive= new ArrayList();
                 // nhan tat ca cac goi cua file
                 int sogoi=filedownreceive.getSoluonggoi();
+                int is=1;
                 while(true){
                      byte[] receiveFileDownLoads = new byte[MAX_PIECES_OF_FILE_SIZE];
                     DatagramPacket receiveFileDownLoadPks=new DatagramPacket(receiveFileDownLoads, receiveFileDownLoads.length);
@@ -514,11 +515,14 @@ public class jmainclient extends javax.swing.JFrame {
                     receiveFileDownLoadPks.getData());
                     ObjectInputStream oiss = new ObjectInputStream(baiss);
                     FileDowInfo filedownreceives=(FileDowInfo) oiss.readObject();
+                    System.out.println("Receiving goi "+filedownreceives.getSogoithu());
+                    System.out.println(is++);
                     dsFiledownreceive.add(filedownreceives);
                     // status 3 gui file xong
                     if(filedownreceives.getStatus()==3){
                         break;
                     }
+                    
                 }
                 
                 // keim tra 
@@ -528,7 +532,12 @@ public class jmainclient extends javax.swing.JFrame {
                     Collections.sort(dsFiledownreceive, new FiledownreceiveComparator());
                     for(FileDowInfo  i : dsFiledownreceive){
                         System.out.println(i.getSogoithu());
-                        bos.write(i.getDatafile(), 0,i.getDatafile().length );
+                        if(i.getSogoithu() == i.getSoluonggoi()){
+                            bos.write(i.getDatafile(), 0,i.getGoicuoicung());
+                        }else{
+                            bos.write(i.getDatafile(), 0,i.getDatafile().length );
+                        }
+                         
                         bos.flush();
                         System.out.println("Ghi thanh cong");
                     }
