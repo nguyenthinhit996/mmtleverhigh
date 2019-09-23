@@ -519,7 +519,7 @@ public class jmainfileserver extends javax.swing.JFrame {
     // thread send file to client 
      class Send_Receive_File implements Runnable{
         // 50 byte for moi lan send file
-         private static final int PIECES_OF_FILE_SIZE = 1024 * 50;
+         private static final int PIECES_OF_FILE_SIZE = 1024 * 60;
         private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 62;
         private DatagramSocket ServerSocket ;
 
@@ -602,7 +602,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                         i++;                        
                         receiveData = new byte[PIECES_OF_FILE_SIZE];                        
                         System.out.println("---packe : "+i);
-                        Thread.sleep(50);
+                        Thread.sleep(100);
                     }
                     System.out.println(" Gui xong roi !");
                 }
