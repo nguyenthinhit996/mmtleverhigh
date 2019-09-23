@@ -12,30 +12,46 @@ import java.io.Serializable;
  * @author peter
  */
 public class FileDowInfo implements Serializable{
-    private final static long serialVersionUID = 1L;
+    private static long serialVersionUID = 1L;
     private String nameFile;
     private byte[] datafile; 
     private String ipServerFile;
     private int portServer;
     private int soluonggoi;
+    private int goicuoicung;
     private int sogoithu;
     // 1 bat dau gui , 2  dang gui , 3 gui hoang thanh.
     private int status;
 
     public FileDowInfo() {
     }
-    
-    public FileDowInfo(String nameFile, byte[] datafile, String ipServerFile, int portServer, int soluonggoi, int sogoithu, int status) {
+
+    public FileDowInfo(String nameFile, byte[] datafile, String ipServerFile, int portServer, int soluonggoi, int goicuoicung, int sogoithu, int status) {
         this.nameFile = nameFile;
         this.datafile = datafile;
         this.ipServerFile = ipServerFile;
         this.portServer = portServer;
         this.soluonggoi = soluonggoi;
+        this.goicuoicung = goicuoicung;
         this.sogoithu = sogoithu;
         this.status = status;
     }
 
     
+    /**
+     * @return the serialVersionUID
+     */
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    /**
+     * @param aSerialVersionUID the serialVersionUID to set
+     */
+    public static void setSerialVersionUID(long aSerialVersionUID) {
+        serialVersionUID = aSerialVersionUID;
+    }
+
     /**
      * @return the nameFile
      */
@@ -107,6 +123,20 @@ public class FileDowInfo implements Serializable{
     }
 
     /**
+     * @return the goicuoicung
+     */
+    public int getGoicuoicung() {
+        return goicuoicung;
+    }
+
+    /**
+     * @param goicuoicung the goicuoicung to set
+     */
+    public void setGoicuoicung(int goicuoicung) {
+        this.goicuoicung = goicuoicung;
+    }
+
+    /**
      * @return the sogoithu
      */
     public int getSogoithu() {
@@ -133,6 +163,5 @@ public class FileDowInfo implements Serializable{
     public void setStatus(int status) {
         this.status = status;
     }
-    
     
 }

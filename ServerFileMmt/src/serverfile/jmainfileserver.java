@@ -538,18 +538,18 @@ public class jmainfileserver extends javax.swing.JFrame {
                 while(true){
                      // nhan du lieu
                     getServerSocket().receive(receivePacket);
-                    String ipClientFile=receivePacket.getAddress().toString();
+                    InetAddress ipClientFile=receivePacket.getAddress();
                     ByteArrayInputStream bais = new ByteArrayInputStream(
                     receivePacket.getData());
                     ObjectInputStream ois = new ObjectInputStream(bais);
                     FileDowInfo filedownreceive=(FileDowInfo) ois.readObject();
                     
                     System.out.println("--------- get file cho ip ---------");
-                    System.out.println(ipClientFile+"/"+lab_port);
+                    System.out.println(ipClientFile.toString()+"/"+lab_port);
                     System.out.println(filedownreceive.getNameFile());
                     
                     // get info file 
-                    File fileSend = new File(lab_path.getText()+filedownreceive.getNameFile());
+                    File fileSend = new File(lab_path.getText()+File.separatorChar+filedownreceive.getNameFile());
                     InputStream inputStream = new FileInputStream(fileSend);
                     BufferedInputStream bis = new BufferedInputStream(inputStream);
                     
@@ -561,18 +561,19 @@ public class jmainfileserver extends javax.swing.JFrame {
                         piecesOfFile++;
                     }
                     filedownreceive.setSoluonggoi(piecesOfFile);
-                    
+                    filedownreceive.setGoicuoicung(lastByteLength);
                     // gui thong tin file cho client
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ObjectOutputStream oos;
                     oos = new ObjectOutputStream(baos);
                     oos.writeObject(filedownreceive);
+                    oos.reset();
                     DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
-                    baos.toByteArray().length,InetAddress.getByName(ipClientFile),Integer.valueOf(lab_port.getText()));
+                    baos.toByteArray().length, ipClientFile,Integer.valueOf(lab_port.getText()));
                     ServerSocket.send(sendPacket); 
                     System.out.println("--------- get info max file cho ip ---------"+ filedownreceive.getSoluonggoi());
                     
-                    
+                   
                     int i=1;
                     while (bis.read(receiveData, 0, PIECES_OF_FILE_SIZE) > 0) {
                         FileDowInfo filedow= new FileDowInfo();
@@ -588,21 +589,22 @@ public class jmainfileserver extends javax.swing.JFrame {
                             filedow.setStatus(2);
                         }
                         filedow.setDatafile(receiveData);
-                        oos.writeObject(filedownreceive);
-                        sendPacket = new DatagramPacket(baos.toByteArray(), 
-                        baos.toByteArray().length,InetAddress.getByName(ipClientFile),Integer.valueOf(lab_port.getText()));
-                        ServerSocket.send(sendPacket); 
-                        oos.reset();
-                        i++;
-                        if(i==piecesOfFile){
-                            receiveData = new byte[lastByteLength];
-                        }else{
-                            receiveData = new byte[PIECES_OF_FILE_SIZE];
-                        }
+                        filedow.setGoicuoicung(lastByteLength);
+                        
+                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                        ObjectOutputStream oos2= new ObjectOutputStream(baos2);
+                        oos2.writeObject(filedow);
+                        oos2.reset();
+                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(), 
+                        baos2.toByteArray().length,ipClientFile,Integer.valueOf(lab_port.getText()));
+                        ServerSocket.send(sendPacket2); 
+                        
+                        i++;                        
+                        receiveData = new byte[PIECES_OF_FILE_SIZE];                        
                         System.out.println("---packe : "+i);
                         Thread.sleep(50);
                     }
-                    
+                    System.out.println(" Gui xong roi !");
                 }
                 
             } catch (Exception ex) {
