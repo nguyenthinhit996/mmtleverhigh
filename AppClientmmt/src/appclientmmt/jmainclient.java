@@ -27,15 +27,22 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
+import java.util.Timer;
 
 /**
  *
@@ -43,68 +50,68 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class jmainclient extends javax.swing.JFrame {
 
-    
-     // send notification when connect or exit connect to server master
-     PrintWriter outServerMasterStream;
-     
-     // all file 
-     AllFileInfo allf;
-     
-     // is connect servermaster
-     boolean isConnectServerMaster=false;
-     
+    // send notification when connect or exit connect to server master
+    PrintWriter outServerMasterStream;
+
+    // all file
+    AllFileInfo allf;
+
+    // is connect servermaster
+    boolean isConnectServerMaster = false;
+
     // moi fileserver is mot thread (DatagramSocket) co moi port
-     Map<Integer,DatagramSocket> mapDatagramSocket = new HashMap<>();    /**
+    Map<Integer, DatagramSocket> mapDatagramSocket = new HashMap<>();
+
+    // port user
+    List<Integer> portuse = new ArrayList<>();
+
+    /**
      * Creates new form jmainserver
      */
     public jmainclient() {
         initComponents();
-        error.setVisible(false);         
+        error.setVisible(false);
         lab_ipclient.setText(getIP());
         txt_ipservermas.setText(getIP());
         txt_portmas.setText("2222");
-        
+
         // update list all file va list processs
-         DefaultListModel model=new DefaultListModel();
-         model.removeAllElements();
+        DefaultListModel model = new DefaultListModel();
+        model.removeAllElements();
         list_allfile.setModel(model);
         list_process.setModel(model);
-        
+
         // path save
         lab_path_save.setText("No Selection");
     }
 
-    String getIP()
-     {
-         Enumeration e;
+    String getIP() {
+        Enumeration e;
         try {
             e = NetworkInterface.getNetworkInterfaces();
-            while(e.hasMoreElements())
-            {
+            while (e.hasMoreElements()) {
                 NetworkInterface n = (NetworkInterface) e.nextElement();
                 Enumeration ee = n.getInetAddresses();
-                while (ee.hasMoreElements())
-                {
+                while (ee.hasMoreElements()) {
                     InetAddress i = (InetAddress) ee.nextElement();
 
-                    if(i.isSiteLocalAddress()){
-                        System.out.println("i.isSiteLocalAddress()"+i.getHostAddress());
+                    if (i.isSiteLocalAddress()) {
+                        System.out.println("i.isSiteLocalAddress()" + i.getHostAddress());
                         return i.getHostAddress();
                     }
                 }
             }
-           
-        } catch (SocketException ex) {
-             
-        }
-        return "localhost";   
-     }
 
-     public class ServerStart implements Runnable 
-    {
+        } catch (SocketException ex) {
+
+        }
+        return "localhost";
+    }
+
+    public class ServerStart implements Runnable {
+
         @Override
-        public void run() 
-        {
+        public void run() {
             Socket sock;
             try {
                 // ket noi voi Servermaster
@@ -117,42 +124,41 @@ public class jmainclient extends javax.swing.JFrame {
                 error.setVisible(true);
                 error.setForeground(Color.GREEN);
                 // thread lang nghe ket noi tu server nhan thong tin all file
-                
-                ObjectInputStream input= new ObjectInputStream(sock.getInputStream());
-                while ((allf =(AllFileInfo) input.readObject()) != null) 
-                {
-                    if(allf.getStatus()==1){
-                        DefaultListModel model=new DefaultListModel();
-                        for(FileInfo i:allf.getLsFile()){
-                           for(String j:i.getLsName()){
-                               String in=i.getIpServerFile()+"|"+i.getPortServerFile()+"|"+j;
+
+                ObjectInputStream input = new ObjectInputStream(sock.getInputStream());
+                while ((allf = (AllFileInfo) input.readObject()) != null) {
+                    if (allf.getStatus() == 1) {
+                        DefaultListModel model = new DefaultListModel();
+                        for (FileInfo i : allf.getLsFile()) {
+                            for (String j : i.getLsName()) {
+                                String in = i.getIpServerFile() + "|" + i.getPortServerFile() + "|" + j;
                                 model.addElement(in);
-                           }
+                            }
                         }
-                       list_allfile.setModel(model);
-                    }else{
-                        DefaultListModel model=new DefaultListModel();
-                       list_allfile.setModel(model);
-                       allf.setLsFile(null);
-                       error.setText("Error connect with server");
-                       error.setForeground(Color.red);
-                       error.setVisible(true);
-                       Thread.currentThread().interrupt(); 
+                        list_allfile.setModel(model);
+                    } else {
+                        DefaultListModel model = new DefaultListModel();
+                        list_allfile.setModel(model);
+                        allf.setLsFile(null);
+                        error.setText("Error connect with server");
+                        error.setForeground(Color.red);
+                        error.setVisible(true);
+                        Thread.currentThread().interrupt();
                     }
                 }
                 System.out.println("Ok ket noi thanh cong");
             } catch (IOException ex) {
                 error.setText("Connect Error");
                 error.setForeground(Color.red);
-                error.setVisible(true); 
-                isConnectServerMaster=false;
-                Thread.currentThread().interrupt(); 
+                error.setVisible(true);
+                isConnectServerMaster = false;
+                Thread.currentThread().interrupt();
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
-     
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -374,69 +380,68 @@ public class jmainclient extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_connectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_connectActionPerformed
-        // TODO add your handling code here:       
-         if(!isConnectServerMaster){
-             if(StringUtils.isEmpty(txt_ipservermas.getText()) 
-                || StringUtils.isEmpty(txt_portmas.getText())){
+        // TODO add your handling code here:
+        if (!isConnectServerMaster) {
+            if (StringUtils.isEmpty(txt_ipservermas.getText())
+                    || StringUtils.isEmpty(txt_portmas.getText())) {
                 error.setText("Connect Error");
-                 error.setForeground(Color.red);
+                error.setForeground(Color.red);
                 error.setVisible(true);
-            }else{
+            } else {
                 error.setVisible(false);
                 // conenct servermaster
                 Thread serverStart = new Thread(new ServerStart());
                 serverStart.start();
-             }
-        }else{
-             error.setText("Connect is exist");
-              error.setForeground(Color.GREEN);
+            }
+        } else {
+            error.setText("Connect is exist");
+            error.setForeground(Color.GREEN);
             error.setVisible(true);
-         }
+        }
     }//GEN-LAST:event_btn_connectActionPerformed
 
     private void btn_downloadfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_downloadfileActionPerformed
         // TODO add your handling code here:
-        if(list_allfile.getModel().getSize() != 0){
-            if(list_allfile.getSelectedValue()!=null){
-                String value=list_allfile.getSelectedValue();
+        if (list_allfile.getModel().getSize() != 0) {
+            if (list_allfile.getSelectedValue() != null) {
+                String value = list_allfile.getSelectedValue();
                 System.out.println(value);
                 // get path save
                 selectPathSave();
-                String regex="\\|";
-                String[] spl=value.split(regex);
-                // kiem tra port da duoc tao chua
-                if(mapDatagramSocket.containsKey(Integer.valueOf(spl[1]))){
-                    Thread a= new Thread(new Send_Receive_File(spl[0],Integer.valueOf(spl[1]),
-                    spl[2],lab_path_save.getText(),mapDatagramSocket.get(Integer.valueOf(spl[1]))));
-                    a.start();
-                    
-                }else{
-                    // tao DatagramSocket clientSocket de gui nhan file
-                    int port=Integer.valueOf(spl[1]);
-                    try{
-                        DatagramSocket clientSocket= new DatagramSocket(port);
-                        mapDatagramSocket.put(port, clientSocket);
-                        Thread a= new Thread(new Send_Receive_File(spl[0],Integer.valueOf(spl[1]),
-                        spl[2],lab_path_save.getText(),clientSocket));
+                if (!lab_path_save.getText().equals("No Selection")) {
+                    String regex = "\\|";
+                    String[] spl = value.split(regex);
+                    // kiem tra port da duoc tao chua
+                    if (mapDatagramSocket.containsKey(Integer.valueOf(spl[1]))) {
+                        Thread a = new Thread(new Send_Receive_File(spl[0], Integer.valueOf(spl[1]),
+                                spl[2], lab_path_save.getText(), mapDatagramSocket.get(Integer.valueOf(spl[1]))));
                         a.start();
-                    } catch (Exception ex) {
-                        Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+
+                    } else {
+                        // tao DatagramSocket clientSocket de gui nhan file
+                        int port = Integer.valueOf(spl[1]);
+                        try {
+                            // socket chu 
+                            DatagramSocket clientSocket = new DatagramSocket(port);
+                            mapDatagramSocket.put(port, clientSocket);
+                            Thread a = new Thread(new Send_Receive_File(spl[0], Integer.valueOf(spl[1]),
+                                    spl[2], lab_path_save.getText(), clientSocket));
+                            a.start();
+                        } catch (Exception ex) {
+                            Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
-                
-                // thread gui nhan file vs server file
-                
-                
-                
-            }else{
-                Confim con= new Confim("Not choose file !!!");
-                con.setLocation(400,200);
+
+            } else {
+                Confim con = new Confim("Not choose file !!!");
+                con.setLocation(400, 200);
                 con.setAlwaysOnTop(true);
                 con.setVisible(true);
             }
-        }else{
-            Confim con= new Confim("Not files in list !!!");
-            con.setLocation(400,200);
+        } else {
+            Confim con = new Confim("Not files in list !!!");
+            con.setLocation(400, 200);
             con.setAlwaysOnTop(true);
             con.setVisible(true);
         }
@@ -446,16 +451,16 @@ public class jmainclient extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btn_cancelActionPerformed
 
-    class Send_Receive_File implements Runnable{
+    class Send_Receive_File implements Runnable {
 
         private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 63;
         private String ipServerFile;
         private int portServerFile;
         private String namefile;
         private String destinationName;
-        private DatagramSocket clientSocket ;
+        private DatagramSocket clientSocket;
 
-        public Send_Receive_File(String ipServerFile, int portServerFile, String namefile, 
+        public Send_Receive_File(String ipServerFile, int portServerFile, String namefile,
                 String destinationName, DatagramSocket clientSocket) {
             this.ipServerFile = ipServerFile;
             this.portServerFile = portServerFile;
@@ -463,105 +468,246 @@ public class jmainclient extends javax.swing.JFrame {
             this.destinationName = destinationName;
             this.clientSocket = clientSocket;
         }
-        
-        
+
+        String getPort() {
+            Random rand = new Random();
+            int random = rand.nextInt((8999 - 8000) + 1) + 5000;
+            return String.valueOf(random);
+        }
+
         @Override
         public void run() {
-            
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos;
+            String port;
+            DatagramSocket socForServer;
             try {
+
+                // gui thong tin den file server de dang ki port moi
+                while (true) {
+                    ByteArrayOutputStream byteofclient = new ByteArrayOutputStream();
+                    ObjectOutputStream oosofclinet = new ObjectOutputStream(byteofclient);
+                    while (true) {
+                        port = getPort();
+                        if (!portuse.contains(Integer.valueOf(port))) {
+                            portuse.add(Integer.valueOf(port));
+                            break;
+                        }
+                    }
+                    String s = lab_ipclient.getText() + "|" + port + "|" + getNamefile();
+                    System.out.print(" Gui " + s);
+                    oosofclinet.writeUTF(s);
+                    oosofclinet.flush();
+                    DatagramPacket sendPacketofclient = new DatagramPacket(byteofclient.toByteArray(),
+                            byteofclient.toByteArray().length, InetAddress.getByName(getIpServerFile()), getPortServerFile());
+                    clientSocket.send(sendPacketofclient);
+                    // nhan ket qua server
+                    byte[] receiveInfor = new byte[MAX_PIECES_OF_FILE_SIZE];
+                    DatagramPacket receiveFileDownLoadPk = new DatagramPacket(receiveInfor, receiveInfor.length);
+                    clientSocket.receive(receiveFileDownLoadPk);
+                    ByteArrayInputStream bais = new ByteArrayInputStream(
+                            receiveFileDownLoadPk.getData());
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    String sre = ois.readUTF();
+                    if (sre.equals("ok")) {
+                        socForServer = new DatagramSocket(Integer.valueOf(port));
+                        break;
+                    }
+                }
+                int portsocForServer = Integer.valueOf(port);
                 //byte[] datafile=new byte[MAX_PIECES_OF_FILE_SIZE];
                 //FileDowInfo filedowss= new FileDowInfo(namefile,datafile,ipServerFile,portServerFile,0,0,1);
-                FileDowInfo filedowss= new FileDowInfo();
+                FileDowInfo filedowss = new FileDowInfo();
                 filedowss.setIpServerFile(ipServerFile);
-                filedowss.setPortServer(portServerFile);
+                filedowss.setPortServer(portsocForServer);
                 filedowss.setNameFile(namefile);
                 filedowss.setSogoithu(0);
                 filedowss.setSoluonggoi(0);
                 filedowss.setStatus(1);
-                
+
+                // gui thong ten file can dowloadn
                 oos = new ObjectOutputStream(baos);
                 oos.writeObject(filedowss);
-                DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
-                baos.toByteArray().length,InetAddress.getByName(getIpServerFile()), getPortServerFile());
-                getClientSocket().send(sendPacket); 
+                DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(),
+                        baos.toByteArray().length, InetAddress.getByName(getIpServerFile()), portsocForServer);
+                socForServer.send(sendPacket);
 
-                
-                // tao file
+                // tao file nay trong cline
                 System.out.println("Create file...");
-                File fileRecetver= new File(destinationName+ File.separatorChar + namefile);
-                BufferedOutputStream bos= new BufferedOutputStream(new FileOutputStream(fileRecetver));
+                File fileRecetver = new File(destinationName + File.separatorChar + namefile);
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(fileRecetver));
                 System.out.println("Receiving nhan thong tin khich thuoch file...");
-                
-                // nhan thong tin khich thuoch file
+
+                // nhan thong tin khich thuoc file
                 byte[] receiveFileDownLoad = new byte[MAX_PIECES_OF_FILE_SIZE];
-                DatagramPacket receiveFileDownLoadPk=new DatagramPacket(receiveFileDownLoad, receiveFileDownLoad.length);
-                clientSocket.receive(receiveFileDownLoadPk);
+                DatagramPacket receiveFileDownLoadPk = new DatagramPacket(receiveFileDownLoad, receiveFileDownLoad.length);
+                socForServer.receive(receiveFileDownLoadPk);
                 ByteArrayInputStream bais = new ByteArrayInputStream(
-                receiveFileDownLoadPk.getData());
+                        receiveFileDownLoadPk.getData());
                 ObjectInputStream ois = new ObjectInputStream(bais);
-                FileDowInfo filedownreceive=(FileDowInfo) ois.readObject();
-                
-                List<FileDowInfo> dsFiledownreceive= new ArrayList();
+                FileDowInfo filedownreceive = (FileDowInfo) ois.readObject();
+
                 // nhan tat ca cac goi cua file
-                int sogoi=filedownreceive.getSoluonggoi();
-                int is=1;
-                while(true){
-                     byte[] receiveFileDownLoads = new byte[MAX_PIECES_OF_FILE_SIZE];
-                    DatagramPacket receiveFileDownLoadPks=new DatagramPacket(receiveFileDownLoads, receiveFileDownLoads.length);
-                    clientSocket.receive(receiveFileDownLoadPks);
-                     ByteArrayInputStream baiss = new ByteArrayInputStream(
-                    receiveFileDownLoadPks.getData());
-                    ObjectInputStream oiss = new ObjectInputStream(baiss);
-                    FileDowInfo filedownreceives=(FileDowInfo) oiss.readObject();
-                    System.out.println("Receiving goi "+filedownreceives.getSogoithu());
-                    System.out.println(is++);
-                    dsFiledownreceive.add(filedownreceives);
-                    // status 3 gui file xong
-                    if(filedownreceives.getStatus()==3){
+                List<FileDowInfo> listFile;
+                List<Integer> PacketReceive;
+                Map<List<FileDowInfo>, List<Integer>> dsFiledownreceive = new HashMap<>();
+                int sogoi = filedownreceive.getSoluonggoi();
+                long timenhan = sogoi * 750; // moi goi 750 milisecond  ( 10mb ~ 2 minute)
+                System.out.println(" start nhan goi trong " + timenhan + " mili s ");
+                dsFiledownreceive = readPackTiList(timenhan, socForServer, sogoi);
+                Iterator mapFileVsPack = dsFiledownreceive.entrySet().iterator();
+                Map.Entry entry = (Map.Entry) mapFileVsPack.next();
+                listFile = (List<FileDowInfo>) entry.getKey();
+                PacketReceive = (List<Integer>) entry.getValue();
+                while (true) {
+                    if (listFile.size() != sogoi) {
+                        System.out.println("Loii khong du goi gui lai server file Thieu goi tin :");
+                        Set<Integer> seti = getPacketLost(PacketReceive, sogoi);
+                        String s = xuatSet(seti);
+                        // gui thong bao la thieu goi tin 
+                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                        ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                        oos2.writeUTF(s);
+                        oos2.flush();
+                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                                baos2.toByteArray().length, InetAddress.getByName(getIpServerFile()), portsocForServer);
+                        socForServer.send(sendPacket2);
+
+                        Map<List<FileDowInfo>, List<Integer>> dsFiledownreceive2 = new HashMap<>();
+                        // get length of so goi mat
+                        String[] spl = s.split("\\,");
+                        long timenhan2 = spl.length * 750;
+                        System.out.println(" start nhan " + spl.length + " goi trong " + timenhan2 + " mili s ");
+                        dsFiledownreceive2 = readPackTiList(timenhan2, socForServer, spl.length);
+                        Iterator mapFileVsPack2 = dsFiledownreceive2.entrySet().iterator();
+                        Map.Entry entry2 = (Map.Entry) mapFileVsPack2.next();
+                        // nhan tat ca cac goi cua file
+                        List<FileDowInfo> listFile2 = (List<FileDowInfo>) entry2.getKey();
+                        //List<Integer> PacketReceive2 = (List<Integer>) entry2.getValue();
+                        for (FileDowInfo i : listFile2) {
+                            if (!PacketReceive.contains(i.getSogoithu())) {
+                                listFile.add(i);
+                                PacketReceive.add(i.getSogoithu());
+                            }
+                        }
+
+                    } else {
+                        // bao serfile la ok roi
+                        
+                        System.out.println("gui lai server file OK");
+                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                        ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                        oos2.writeUTF("ok");
+                        oos2.flush();
+                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                                baos2.toByteArray().length, InetAddress.getByName(getIpServerFile()), portsocForServer);
+                        socForServer.send(sendPacket2);
                         break;
                     }
-                    
                 }
-                
-                // keim tra 
-                if(dsFiledownreceive.size() != sogoi){
-                    System.out.println("Loii khong du goi");
-                }else{
-                    Collections.sort(dsFiledownreceive, new FiledownreceiveComparator());
-                    for(FileDowInfo  i : dsFiledownreceive){
-                        System.out.println(i.getSogoithu());
-                        if(i.getSogoithu() == i.getSoluonggoi()){
-                            bos.write(i.getDatafile(), 0,i.getGoicuoicung());
-                        }else{
-                            bos.write(i.getDatafile(), 0,i.getDatafile().length );
-                        }
-                         
-                        bos.flush();
-                        System.out.println("Ghi thanh cong");
+
+                // keim tra dong goi file lai
+                Collections.sort(listFile, new FiledownreceiveComparator());
+                for (FileDowInfo i : listFile) {
+                    System.out.println(i.getSogoithu());
+                    if (i.getSogoithu() == i.getSoluonggoi()) {
+                        bos.write(i.getDatafile(), 0, i.getGoicuoicung());
+                    } else {
+                        bos.write(i.getDatafile(), 0, i.getDatafile().length);
                     }
-                }  
-                
+
+                    bos.flush();
+                    System.out.println("Ghi thanh cong");
+                }
+                Iterator<Integer> itr = portuse.iterator();
+                while (itr.hasNext()) {
+                    if (itr.next() == portsocForServer) {
+                        itr.remove();
+                        break;
+                    }
+                }
+                Thread.currentThread().interrupt();
+
             } catch (Exception ex) {
                 Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
                 Thread.currentThread().interrupt();
             }
-            
+
         }
 
-        // sort 
+        Map<List<FileDowInfo>, List<Integer>> readPackTiList(long maxtime, DatagramSocket socForServer, int maxgoi) {
+            Map<List<FileDowInfo>, List<Integer>> mapdsFiledownreceives = new HashMap<>();
+            List<FileDowInfo> dsFiledownreceives = new ArrayList<>();
+            List<Integer> dspacket = new ArrayList<>();
+            long timestart = System.currentTimeMillis();
+            int index = 1;
+            try {
+                while (true) {
+
+                    if ((System.currentTimeMillis() - timestart) > maxtime) {
+                        System.out.println("Qua time");
+                        break;
+                    }
+                    byte[] receiveFileDownLoads = new byte[MAX_PIECES_OF_FILE_SIZE];
+                    DatagramPacket receiveFileDownLoadPks = new DatagramPacket(receiveFileDownLoads, receiveFileDownLoads.length);
+                    socForServer.receive(receiveFileDownLoadPks);
+                    ByteArrayInputStream baiss = new ByteArrayInputStream(
+                            receiveFileDownLoadPks.getData());
+                    ObjectInputStream oiss = new ObjectInputStream(baiss);
+                    FileDowInfo filedownreceives = (FileDowInfo) oiss.readObject();
+                    System.out.println("Receiving File " + filedownreceives.getNameFile() + " goi " + filedownreceives.getSogoithu());
+                    dsFiledownreceives.add(filedownreceives);
+                    dspacket.add(filedownreceives.getSogoithu());
+                    // status 3 gui file xong
+                    if (filedownreceives.getStatus() == 3) {
+                        break;
+                    }
+                    if (maxgoi == index) {
+                        break;
+                    }
+                    index++;
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            mapdsFiledownreceives.put(dsFiledownreceives, dspacket);
+            return mapdsFiledownreceives;
+        }
+
+        Set<Integer> getPacketLost(List<Integer> readPackTiList, int max) {
+            Set<Integer> res = new HashSet<>();
+            for (int i = 1; i <= max; i++) {
+                if (!readPackTiList.contains(i)) {
+                    res.add(i);
+                }
+            }
+            return res;
+        }
+
+        String xuatSet(Set<Integer> getPacketLost) {
+            StringBuilder a = new StringBuilder();
+            for (int i : getPacketLost) {
+                a.append(String.valueOf(i));
+                a.append(",");
+            }
+            a.deleteCharAt(a.length() - 1);
+            System.out.println(a);
+            return a.toString();
+        }
+
+        // sort
         class FiledownreceiveComparator implements Comparator<FileDowInfo> {
+
             @Override
             public int compare(FileDowInfo o1, FileDowInfo o2) {
-                if(o1.getSogoithu() > o2.getSogoithu())
-                {
+                if (o1.getSogoithu() > o2.getSogoithu()) {
                     return 1;
                 }
-                return 0;
-        }}
-        
-        
+                return -1;
+            }
+        }
+
         /**
          * @return the ipServerFile
          */
@@ -618,8 +764,6 @@ public class jmainclient extends javax.swing.JFrame {
             this.destinationName = destinationName;
         }
 
-        
-
         /**
          * @return the clientSocket
          */
@@ -633,11 +777,11 @@ public class jmainclient extends javax.swing.JFrame {
         public void setClientSocket(DatagramSocket clientSocket) {
             this.clientSocket = clientSocket;
         }
-        
+
     }
-            
-    void selectPathSave(){ 
-        JFileChooser chooser = new JFileChooser(); 
+
+    void selectPathSave() {
+        JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Choose Folde Save File");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -645,23 +789,22 @@ public class jmainclient extends javax.swing.JFrame {
         // disable the "All files" option.
         //
         chooser.setAcceptAllFileFilterUsed(false);
-        //    
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
-          System.out.println("getCurrentDirectory(): " 
-             +  chooser.getCurrentDirectory());
-          System.out.println("getSelectedFile() : " 
-             +  chooser.getSelectedFile());
-             lab_path_save.setText(chooser.getSelectedFile().toString());    
+        //
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            System.out.println("getCurrentDirectory(): "
+                    + chooser.getCurrentDirectory());
+            System.out.println("getSelectedFile() : "
+                    + chooser.getSelectedFile());
+            lab_path_save.setText(chooser.getSelectedFile().toString());
+        } else {
+            System.out.println("No Selection ");
+            lab_path_save.setText("No Selection");
         }
-        else {
-          System.out.println("No Selection ");
-          lab_path_save.setText("No Selection");
-         }
     }
-    
+
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
-         if(outServerMasterStream != null){
+        if (outServerMasterStream != null) {
             outServerMasterStream.print("exit");
             outServerMasterStream.flush();
         }
@@ -674,23 +817,31 @@ public class jmainclient extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(jmainclient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(jmainclient.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(jmainclient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(jmainclient.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(jmainclient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(jmainclient.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(jmainclient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(jmainclient.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
