@@ -505,6 +505,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                 error.setVisible(true);
                 Thread.currentThread().interrupt();
                 isConnect = false;
+                mapIpclientVsNameFile.clear();
             }
         }
     }
@@ -760,6 +761,14 @@ public class jmainfileserver extends javax.swing.JFrame {
                 }
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
+                // xoa no di
+                for (Map.Entry<IpclientVsNameFile, DatagramSocket> ii : mapIpclientVsNameFile.entrySet()) {
+                    if (ii.getKey().getIpclient().equals(getSipfiname().getIpclient())
+                            && ii.getKey().getNameFileDownload().equals(getSipfiname().getNameFileDownload())) {
+                        mapIpclientVsNameFile.remove(ii.getKey());
+                        break;
+                    }
+                }
             }
         }
 
@@ -832,6 +841,13 @@ public class jmainfileserver extends javax.swing.JFrame {
 
             } catch (Exception e) {
                 System.out.print("Error");
+                for (Map.Entry<IpclientVsNameFile, DatagramSocket> ii : mapIpclientVsNameFile.entrySet()) {
+                    if (ii.getKey().getIpclient().equals(getSipfiname().getIpclient())
+                            && ii.getKey().getNameFileDownload().equals(getSipfiname().getNameFileDownload())) {
+                        mapIpclientVsNameFile.remove(ii.getKey());
+                        break;
+                    }
+                }
             }
         }
 
