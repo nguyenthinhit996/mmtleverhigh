@@ -521,7 +521,7 @@ public class jmainfileserver extends javax.swing.JFrame {
         }
 
         @Override
-         public void run() {
+        public void run() {
             try {
                 // tao goi de nhan
                 byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
@@ -727,7 +727,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                     Thread.sleep(50);
                 }
                 // gui them 5 file cuoi de trang mat goi tin
-                for (int i2 = 0; i2 < 10; i2++) {
+                for (int i2 = 0; i2 < 5; i2++) {
                     FileDowInfo filedow = new FileDowInfo();
                     filedow.setIpServerFile(ipfileserver.getText());
                     filedow.setPortServer(sipfiname.getPort());
@@ -750,14 +750,14 @@ public class jmainfileserver extends javax.swing.JFrame {
                 System.out.println("Gui xong lan chinh ");
                 // check and kiem tra goi co bi thieu hay khong.
                 CheckAndsendFileLost(lastByteLength, mapByte, socForClient, sipfiname.getPort());
-               // mapIpclientVsNameFile.remove(getSipfiname());
+                // mapIpclientVsNameFile.remove(getSipfiname());
                 for (Map.Entry<IpclientVsNameFile, DatagramSocket> ii : mapIpclientVsNameFile.entrySet()) {
-                        if (ii.getKey().getIpclient().equals(getSipfiname().getIpclient())
-                                && ii.getKey().getNameFileDownload().equals(getSipfiname().getNameFileDownload())) {
-                            mapIpclientVsNameFile.remove(ii.getKey());
-                            break;
-                        }
+                    if (ii.getKey().getIpclient().equals(getSipfiname().getIpclient())
+                            && ii.getKey().getNameFileDownload().equals(getSipfiname().getNameFileDownload())) {
+                        mapIpclientVsNameFile.remove(ii.getKey());
+                        break;
                     }
+                }
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -767,11 +767,13 @@ public class jmainfileserver extends javax.swing.JFrame {
             try {
 
                 int lan = 2;
+                byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
+
                 while (true) {
                     System.out.println("------------ send lan -----------" + lan);
                     lan++;
                     // gui packet thieu
-                    byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
+                    receiveData = new byte[PIECES_OF_FILE_SIZE];
                     DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                     socForClient.receive(receivePacket);
                     ByteArrayInputStream bais = new ByteArrayInputStream(
@@ -785,9 +787,10 @@ public class jmainfileserver extends javax.swing.JFrame {
                     }
                     // gui lai packet vs so luong la a.
                     String[] sp = a.split("\\,");
-                    String cuoi="";
+                    System.out.println("nhan send to " + sp.length);
+                    String cuoi = "";
                     for (String sp1 : sp) {
-                        cuoi=sp1;
+                        cuoi = sp1;
                         FileDowInfo filedow = new FileDowInfo();
                         filedow.setIpServerFile(ipfileserver.getText());
                         filedow.setPortServer(port);
@@ -806,7 +809,7 @@ public class jmainfileserver extends javax.swing.JFrame {
                         Thread.sleep(50);
                     }
 
-                    for (int i2 = 0; i2 < 10; i2++) {
+                    for (int i2 = 0; i2 < 5; i2++) {
                         FileDowInfo filedow = new FileDowInfo();
                         filedow.setIpServerFile(ipfileserver.getText());
                         filedow.setPortServer(sipfiname.getPort());
