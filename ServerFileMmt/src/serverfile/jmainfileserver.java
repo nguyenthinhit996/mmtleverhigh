@@ -1,6 +1,5 @@
 package serverfile;
 
- 
 import comon.FileDowInfo;
 import comon.FileInfo;
 import java.awt.Color;
@@ -26,6 +25,9 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,32 +40,33 @@ import org.apache.commons.lang3.StringUtils;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-
 /**
  *
  * @author peter
  */
 public class jmainfileserver extends javax.swing.JFrame {
 
-     //client
-     ArrayList clientOutputStreams ;
-     
-     //servermaster
-     ObjectOutputStream ObjectOutputStreamServerMaster;
-     
-     boolean isConnect =false;
-     
-     // get folder 
-     JFileChooser chooser;
-     
-     // Object FileInfo is information send to server master then servermater send to client
-     FileInfo fileinfo= new FileInfo();
-     
+    //client check connect
+    ArrayList clientOutputStreams;
+
+    //servermaster
+    ObjectOutputStream ObjectOutputStreamServerMaster;
+
+    boolean isConnect = false;
+
+    // get folder
+    JFileChooser chooser;
+
+    // Object FileInfo is information send to server master then servermater send to client
+    FileInfo fileinfo = new FileInfo();
+    // luu ipclient vs file name down
+    Map<IpclientVsNameFile, DatagramSocket> mapIpclientVsNameFile = new HashMap<>();
+
     /**
      * Creates new form jmainserver
      */
     public jmainfileserver() {
+
         initComponents();
         error.setVisible(false);
         txt_ipserver.setText("");
@@ -74,7 +77,7 @@ public class jmainfileserver extends javax.swing.JFrame {
         txt_ipserver.setText(getIP());
         txt_port.setText("2222");
         lab_path.setText("No Selection");
-        DefaultListModel model=new DefaultListModel();
+        DefaultListModel model = new DefaultListModel();
         model.clear();
         list_file.setModel(model);
     }
@@ -279,46 +282,44 @@ public class jmainfileserver extends javax.swing.JFrame {
     private void btn_connectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_connectionActionPerformed
         // TODO add your handling code here:
         // kiem tra set thu muc chua
-        if(fileinfo.getLsName()==null || fileinfo.getLsName().isEmpty()){
+        if (fileinfo.getLsName() == null || fileinfo.getLsName().isEmpty()) {
             error.setText("No Selection");
             error.setForeground(Color.red);
             error.setVisible(true);
-        }else{
-            if(!isConnect){
-                if(StringUtils.isEmpty(lab_path.getText()) 
-                   || StringUtils.isEmpty(txt_ipserver.getText()) 
-                   || StringUtils.isEmpty(txt_port.getText())){
-                   error.setText("Connect Error");
-                   error.setForeground(Color.red);
-                   error.setVisible(true);
-               }else{
-                   error.setVisible(false);
-                   // conenct servermaster
-                   Thread serverStart = new Thread(new ServerStart());
-                   serverStart.start();
-                   fileinfo.setIpServerFile(ipfileserver.getText());
-                   fileinfo.toString();
+        } else {
+            if (!isConnect) {
+                if (StringUtils.isEmpty(lab_path.getText())
+                        || StringUtils.isEmpty(txt_ipserver.getText())
+                        || StringUtils.isEmpty(txt_port.getText())) {
+                    error.setText("Connect Error");
+                    error.setForeground(Color.red);
+                    error.setVisible(true);
+                } else {
+                    error.setVisible(false);
+                    // conenct servermaster
+                    Thread serverStart = new Thread(new ServerStart());
+                    serverStart.start();
+                    fileinfo.setIpServerFile(ipfileserver.getText());
+                    fileinfo.toString();
                 }
-            }else{
-                 error.setText("Connect is exit");
-                 error.setForeground(Color.GREEN);
+            } else {
+                error.setText("Connect is exit");
+                error.setForeground(Color.GREEN);
                 error.setVisible(true);
-             }
+            }
         }
-         
-        
-            
-            // vua nhan dc vua gui dc
-            ArrayList clientOutputStreams = new ArrayList();
+
+        // vua nhan dc vua gui dc
+        ArrayList clientOutputStreams = new ArrayList();
 
     }//GEN-LAST:event_btn_connectionActionPerformed
 
     private void browerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browerActionPerformed
         // TODO add your handling code here:
-        if(fileinfo.getLsName() !=null){
+        if (fileinfo.getLsName() != null) {
             return;
         }
-        chooser = new JFileChooser(); 
+        chooser = new JFileChooser();
         chooser.setCurrentDirectory(new java.io.File("."));
         chooser.setDialogTitle("Chon Thu Muc");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -326,62 +327,61 @@ public class jmainfileserver extends javax.swing.JFrame {
         // disable the "All files" option.
         //
         chooser.setAcceptAllFileFilterUsed(false);
-        //    
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) { 
-          System.out.println("getCurrentDirectory(): " 
-             +  chooser.getCurrentDirectory());
-          System.out.println("getSelectedFile() : " 
-             +  chooser.getSelectedFile());
-             lab_path.setText(chooser.getSelectedFile().toString());
-             FilenameFilter filter= new FilenameFilter() {
-              @Override
-              public boolean accept(File dir, String name) {
-                  if(name.endsWith(".zip") || name.endsWith(".rar")){
-                      return true;
-              }
-               return false;  
-          } };
-              
-             String[] listF=chooser.getSelectedFile().list(filter);
-             if(listF.length != 0){
+        //
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            System.out.println("getCurrentDirectory(): "
+                    + chooser.getCurrentDirectory());
+            System.out.println("getSelectedFile() : "
+                    + chooser.getSelectedFile());
+            lab_path.setText(chooser.getSelectedFile().toString());
+            FilenameFilter filter = new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    if (name.endsWith(".zip") || name.endsWith(".rar")) {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            String[] listF = chooser.getSelectedFile().list(filter);
+            if (listF.length != 0) {
                 fileinfo.setDestinationDirectory(chooser.getSelectedFile().toString());
                 fileinfo.setLsName(Arrays.asList(listF));
                 fileinfo.setPortServerFile(Integer.valueOf(lab_port.getText()));
-                DefaultListModel model=new DefaultListModel();
-                for(String i:listF){
+                DefaultListModel model = new DefaultListModel();
+                for (String i : listF) {
                     model.addElement(i);
                 }
                 list_file.setModel(model);
-             }else{
+            } else {
                 lab_path.setText("No File avaliable in this folder");
-                isConnect=false;
-             }
-             
-          }
-        else {
-          System.out.println("No Selection ");
-          lab_path.setText("No Selection");
-          isConnect=false;
-         }
+                isConnect = false;
+            }
+
+        } else {
+            System.out.println("No Selection ");
+            lab_path.setText("No Selection");
+            isConnect = false;
+        }
     }//GEN-LAST:event_browerActionPerformed
 
-    
+
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         // TODO add your handling code here:
         // gui gat ket noi server master
-        if(ObjectOutputStreamServerMaster != null){
-           // xoa object nay ben server master
-           fileinfo.setStatus(0);
+        if (ObjectOutputStreamServerMaster != null) {
+            // xoa object nay ben server master
+            fileinfo.setStatus(0);
             try {
                 ObjectOutputStreamServerMaster.reset();
                 ObjectOutputStreamServerMaster.writeObject(fileinfo);
             } catch (IOException ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
-           
 
         }
-        
+
     }//GEN-LAST:event_formWindowClosing
 
     /**
@@ -391,7 +391,7 @@ public class jmainfileserver extends javax.swing.JFrame {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -433,49 +433,43 @@ public class jmainfileserver extends javax.swing.JFrame {
             }
         });
     }
-    
-    
-    String getIP()
-     {
-         Enumeration e;
+
+    String getIP() {
+        Enumeration e;
         try {
             e = NetworkInterface.getNetworkInterfaces();
-            while(e.hasMoreElements())
-            {
+            while (e.hasMoreElements()) {
                 NetworkInterface n = (NetworkInterface) e.nextElement();
                 Enumeration ee = n.getInetAddresses();
-                while (ee.hasMoreElements())
-                {
+                while (ee.hasMoreElements()) {
                     InetAddress i = (InetAddress) ee.nextElement();
 
-                    if(i.isSiteLocalAddress()){
-                        System.out.println("i.isSiteLocalAddress()"+i.getHostAddress());
+                    if (i.isSiteLocalAddress()) {
+                        System.out.println("i.isSiteLocalAddress()" + i.getHostAddress());
                         return i.getHostAddress();
                     }
                 }
             }
-           
+
         } catch (SocketException ex) {
-             
+
         }
-        return "localhost";   
-     }
+        return "localhost";
+    }
 
     // random port 5000 5999
-    String getPort(){
+    String getPort() {
         Random rand = new Random();
-         int random = rand.nextInt((5999 - 5000) + 1) + 5000;
-         return String.valueOf(random);
+        int random = rand.nextInt((5999 - 5000) + 1) + 5000;
+        return String.valueOf(random);
     }
-    
+
     // thread start server
-    
-    public class ServerStart implements Runnable 
-    {
+    public class ServerStart implements Runnable {
+
         @Override
-        public void run() 
-        {
-             Socket sock;
+        public void run() {
+            Socket sock;
             try {
                 // ket noi voi Servermaster
                 sock = new Socket(txt_ipserver.getText().toString(), Integer.valueOf(txt_port.getText()));
@@ -483,130 +477,146 @@ public class jmainfileserver extends javax.swing.JFrame {
                 // gui thong bao den servermaster la file server
                 outServerMasterStream.println("serverfile");
                 outServerMasterStream.flush();
-                
+
                 // gui thong tin file den servermaster
                 fileinfo.setStatus(1);
-                ObjectOutputStreamServerMaster =new ObjectOutputStream(sock.getOutputStream());
+                ObjectOutputStreamServerMaster = new ObjectOutputStream(sock.getOutputStream());
                 ObjectOutputStreamServerMaster.writeObject(fileinfo);
                 ObjectOutputStreamServerMaster.flush();
-                 
-                
+
                 // thread lang nghe ket noi tu server cho truong hop ngat ket noi
-                Thread serverMasterHandler = new Thread( new ServerMasterHandler(sock));
+                Thread serverMasterHandler = new Thread(new ServerMasterHandler(sock));
                 serverMasterHandler.start();
-                isConnect=true;
+                isConnect = true;
                 error.setText("Connect success ");
                 error.setVisible(true);
                 error.setForeground(Color.GREEN);
                 System.out.println("Ok ket noi thanh cong");
-                
-//                // ket noi UDP vs client                 
-                  DatagramSocket serverSocket = new DatagramSocket(Integer.valueOf(lab_port.getText()));
-                  Thread abc= new Thread(new Send_Receive_File(serverSocket));
-                  abc.start();
-                
+
+//                // ket noi UDP vs client
+                DatagramSocket serverSocket = new DatagramSocket(Integer.valueOf(lab_port.getText()));
+                Thread abc = new Thread(new Send_Receive_File(serverSocket));
+                abc.start();
+
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
                 error.setText("Connect Error");
                 error.setForeground(Color.red);
-                error.setVisible(true); 
+                error.setVisible(true);
                 Thread.currentThread().interrupt();
-                isConnect=false;
+                isConnect = false;
             }
         }
     }
-    
-    // thread send file to client 
-     class Send_Receive_File implements Runnable{
-        // 50 byte for moi lan send file
-         private static final int PIECES_OF_FILE_SIZE = 1024 * 60;
-        private static final int MAX_PIECES_OF_FILE_SIZE = 1024 * 62;
-        private DatagramSocket ServerSocket ;
 
-        public Send_Receive_File( DatagramSocket ServerSocket) {
+    // thread send file to client
+    class Send_Receive_File implements Runnable {
+
+        // 50 byte for moi lan send file
+        private static final int PIECES_OF_FILE_SIZE = 1024 * 60;
+        private DatagramSocket ServerSocket;
+
+        public Send_Receive_File(DatagramSocket ServerSocket) {
             this.ServerSocket = ServerSocket;
         }
- 
-        
+
         @Override
-        public void run() {
+         public void run() {
             try {
-                // tao goi de nhan 
+                // tao goi de nhan
                 byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                  
-                while(true){
-                     // nhan du lieu
-                    getServerSocket().receive(receivePacket);
-                    InetAddress ipClientFile=receivePacket.getAddress();
-                    ByteArrayInputStream bais = new ByteArrayInputStream(
-                    receivePacket.getData());
-                    ObjectInputStream ois = new ObjectInputStream(bais);
-                    FileDowInfo filedownreceive=(FileDowInfo) ois.readObject();
-                    
-                    System.out.println("--------- get file cho ip ---------");
-                    System.out.println(ipClientFile.toString()+"/"+lab_port);
-                    System.out.println(filedownreceive.getNameFile());
-                    
-                    // get info file 
-                    File fileSend = new File(lab_path.getText()+File.separatorChar+filedownreceive.getNameFile());
-                    InputStream inputStream = new FileInputStream(fileSend);
-                    BufferedInputStream bis = new BufferedInputStream(inputStream);
-                    
-                    long fileLength = fileSend.length();
-                    int piecesOfFile = (int) (fileLength / PIECES_OF_FILE_SIZE);
-                    int lastByteLength = (int) (fileLength % PIECES_OF_FILE_SIZE);
-                    
-                    if (lastByteLength > 0) {
-                        piecesOfFile++;
-                    }
-                    filedownreceive.setSoluonggoi(piecesOfFile);
-                    filedownreceive.setGoicuoicung(lastByteLength);
-                    // gui thong tin file cho client
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ObjectOutputStream oos;
-                    oos = new ObjectOutputStream(baos);
-                    oos.writeObject(filedownreceive);
-                    oos.reset();
-                    DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(), 
-                    baos.toByteArray().length, ipClientFile,Integer.valueOf(lab_port.getText()));
-                    ServerSocket.send(sendPacket); 
-                    System.out.println("--------- get info max file cho ip ---------"+ filedownreceive.getSoluonggoi());
-                    
-                   
-                    int i=1;
-                    while (bis.read(receiveData, 0, PIECES_OF_FILE_SIZE) > 0) {
-                        FileDowInfo filedow= new FileDowInfo();
-                        filedow.setIpServerFile(ipfileserver.getText());
-                        filedow.setPortServer(Integer.valueOf(lab_port.getText()));
-                        filedow.setNameFile(filedownreceive.getNameFile());
-                        filedow.setSogoithu(i);
-                        filedow.setSoluonggoi(piecesOfFile);
-                        // gui thong tin den file server de down
-                        if(i==piecesOfFile){ // gui xong
-                            filedow.setStatus(3);
-                        }else{
-                            filedow.setStatus(2);
+
+                while (true) {
+
+                    // tao ra DatagramSocket moi cho moi client
+                    DatagramSocket socForClient;
+                    int portGen;
+                    while (true) {
+                        getServerSocket().receive(receivePacket);
+                        ByteArrayInputStream byteinfoclient = new ByteArrayInputStream(
+                                receivePacket.getData());
+                        ObjectInputStream ois = new ObjectInputStream(byteinfoclient);
+                        String clientInfor = ois.readUTF();
+                        String[] slp = clientInfor.split("\\|");
+                        System.out.println("nhan " + clientInfor);
+                        try {
+                            if (!IscheckExistPort(Integer.valueOf(slp[1]))) {
+                                socForClient = new DatagramSocket(Integer.valueOf(slp[1]));
+                                portGen = Integer.valueOf(slp[1]);
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                ObjectOutputStream oos;
+                                oos = new ObjectOutputStream(baos);
+                                System.out.println("Gui Ok");
+                                oos.writeUTF("ok");
+                                oos.flush();
+                                DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(),
+                                        baos.toByteArray().length, receivePacket.getAddress(), Integer.valueOf(lab_port.getText()));
+                                getServerSocket().send(sendPacket);
+                                oos.reset();
+                                break;
+                            } else {
+                                socForClient = new DatagramSocket(Integer.valueOf(slp[1]));
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                ObjectOutputStream oos;
+                                oos = new ObjectOutputStream(baos);
+                                System.out.println("Trung port");
+                                oos.writeUTF("no");
+                                oos.reset();
+                                DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(),
+                                        baos.toByteArray().length, receivePacket.getAddress(), Integer.valueOf(lab_port.getText()));
+                                getServerSocket().send(sendPacket);
+                            }
+                        } catch (IOException e) {
+                            // bao loi cho client 
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            ObjectOutputStream oos;
+                            oos = new ObjectOutputStream(baos);
+                            oos.writeUTF("no");
+                            System.out.println("Gui no Exception");
+                            oos.reset();
+                            DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(),
+                                    baos.toByteArray().length, receivePacket.getAddress(), Integer.valueOf(lab_port.getText()));
+                            getServerSocket().send(sendPacket);
                         }
-                        filedow.setDatafile(receiveData);
-                        filedow.setGoicuoicung(lastByteLength);
-                        
-                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                        ObjectOutputStream oos2= new ObjectOutputStream(baos2);
-                        oos2.writeObject(filedow);
-                        oos2.reset();
-                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(), 
-                        baos2.toByteArray().length,ipClientFile,Integer.valueOf(lab_port.getText()));
-                        ServerSocket.send(sendPacket2); 
-                        
-                        i++;                        
-                        receiveData = new byte[PIECES_OF_FILE_SIZE];                        
-                        System.out.println("---packe : "+i);
-                        Thread.sleep(100);
                     }
-                    System.out.println(" Gui xong roi !");
+                    // nhan du lieu
+                    socForClient.receive(receivePacket);
+                    InetAddress ipClientFile = receivePacket.getAddress();
+                    ByteArrayInputStream bais = new ByteArrayInputStream(
+                            receivePacket.getData());
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    FileDowInfo filedownreceive = (FileDowInfo) ois.readObject();
+
+                    System.out.println("--------- get file cho ip ---------");
+                    System.out.println(ipClientFile.toString() + "/" + portGen);
+                    System.out.println(filedownreceive.getNameFile());
+                    IpclientVsNameFile fi = new IpclientVsNameFile(portGen,
+                            receivePacket.getAddress(), filedownreceive.getNameFile());
+
+                    // moi ipclient and file name download is thread
+                    int flag = 0;
+                    for (Map.Entry<IpclientVsNameFile, DatagramSocket> i : mapIpclientVsNameFile.entrySet()) {
+                        if (i.getKey().getIpclient().equals(fi.getIpclient())
+                                && i.getKey().getNameFileDownload().equals(fi.getNameFileDownload())) {
+                            flag = 1;
+                            break;
+                        }
+                    }
+                    // ko co IpclientVsNameFile
+                    if (flag == 0) {
+                        mapIpclientVsNameFile.put(fi, socForClient);
+                        // thread down for client + this file.
+                        Thread newThread = new Thread(
+                                new ThreadSendPacketFile(socForClient, filedownreceive, ipClientFile, fi)
+                        );
+                        newThread.start();
+                    } else {
+                        //
+                        System.out.println("dang down load " + fi.getIpclient() + " file: " + fi.getNameFileDownload());
+                    }
                 }
-                
+
             } catch (Exception ex) {
                 Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -626,66 +636,365 @@ public class jmainfileserver extends javax.swing.JFrame {
             this.ServerSocket = ServerSocket;
         }
 
-    }
-    
-    // ServerMasterHandler
-     public class ServerMasterHandler implements Runnable	
-   {
-       BufferedReader inFileServer;
-       Socket sockFileServer;
-        
+        boolean IscheckExistPort(int port) {
+            for (Map.Entry<IpclientVsNameFile, DatagramSocket> i : mapIpclientVsNameFile.entrySet()) {
+                if (i.getKey().getPort() == port) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-       public ServerMasterHandler(Socket Socket) 
-       {            
-            try 
-            {
+    }
+
+    // thread send packet file
+    class ThreadSendPacketFile implements Runnable {
+
+        private static final int PIECES_OF_FILE_SIZE = 1024 * 60;
+        private DatagramSocket socForClient;
+        private FileDowInfo filedownreceive;
+        private InetAddress ipClientFile;
+        private IpclientVsNameFile sipfiname;
+
+        public ThreadSendPacketFile(DatagramSocket socForClient, FileDowInfo filedownreceive, InetAddress ipClientFile, IpclientVsNameFile sipfiname) {
+            this.socForClient = socForClient;
+            this.filedownreceive = filedownreceive;
+            this.ipClientFile = ipClientFile;
+            this.sipfiname = sipfiname;
+        }
+
+        @Override
+        public void run() {
+            byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
+            try {
+                // get info file
+                File fileSend = new File(lab_path.getText() + File.separatorChar + getFiledownreceive().getNameFile());
+                InputStream inputStream;
+                inputStream = new FileInputStream(fileSend);
+                BufferedInputStream bis = new BufferedInputStream(inputStream);
+
+                long fileLength = fileSend.length();
+                int piecesOfFile = (int) (fileLength / PIECES_OF_FILE_SIZE);
+                int lastByteLength = (int) (fileLength % PIECES_OF_FILE_SIZE);
+
+                if (lastByteLength > 0) {
+                    piecesOfFile++;
+                }
+                getFiledownreceive().setSoluonggoi(piecesOfFile);
+                getFiledownreceive().setGoicuoicung(lastByteLength);
+
+                // gui thong tin file cho client
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos;
+                oos = new ObjectOutputStream(baos);
+                oos.writeObject(getFiledownreceive());
+                oos.reset();
+                DatagramPacket sendPacket = new DatagramPacket(baos.toByteArray(),
+                        baos.toByteArray().length, getIpClientFile(), sipfiname.getPort());
+                socForClient.send(sendPacket);
+                System.out.println("--------- get info max file cho ip ---------" + getFiledownreceive().getSoluonggoi());
+
+                // gui tat ca cac goi trong file
+                Map<Integer, byte[]> mapByte = new HashMap<>();
+                int i = 1;
+                while (bis.read(receiveData, 0, PIECES_OF_FILE_SIZE) > 0) {
+                    FileDowInfo filedow = new FileDowInfo();
+                    filedow.setIpServerFile(ipfileserver.getText());
+                    filedow.setPortServer(sipfiname.getPort());
+                    filedow.setNameFile(getFiledownreceive().getNameFile());
+                    filedow.setSogoithu(i);
+                    filedow.setSoluonggoi(piecesOfFile);
+                    // gui thong tin den file server de down
+                    if (i == piecesOfFile) { // gui xong
+                        filedow.setStatus(3);
+                    } else {
+                        filedow.setStatus(2);
+                    }
+                    filedow.setDatafile(receiveData);
+                    filedow.setGoicuoicung(lastByteLength);
+
+                    ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                    ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                    oos2.writeObject(filedow);
+                    oos2.reset();
+                    DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                            baos2.toByteArray().length, getIpClientFile(), sipfiname.getPort());
+                    socForClient.send(sendPacket2);
+                    mapByte.put(i, receiveData);
+                    i++;
+                    receiveData = new byte[PIECES_OF_FILE_SIZE];
+                    System.out.println("---packe : " + i);
+                    Thread.sleep(50);
+                }
+                // gui them 5 file cuoi de trang mat goi tin
+                for (int i2 = 0; i2 < 10; i2++) {
+                    FileDowInfo filedow = new FileDowInfo();
+                    filedow.setIpServerFile(ipfileserver.getText());
+                    filedow.setPortServer(sipfiname.getPort());
+                    filedow.setNameFile(getFiledownreceive().getNameFile());
+                    filedow.setSogoithu(mapByte.size());
+                    filedow.setGoicuoicung(lastByteLength);
+                    filedow.setStatus(3);
+                    filedow.setDatafile(mapByte.get(mapByte.size()));
+                    ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                    ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                    oos2.writeObject(filedow);
+                    oos2.reset();
+                    DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                            baos2.toByteArray().length, getIpClientFile(), sipfiname.getPort());
+                    socForClient.send(sendPacket2);
+                    System.out.println("Gui " + i2 + " file cuoi " + getFiledownreceive().getNameFile() + " goi " + mapByte.size());
+                    Thread.sleep(100);
+                }
+
+                System.out.println("Gui xong lan chinh ");
+                // check and kiem tra goi co bi thieu hay khong.
+                CheckAndsendFileLost(lastByteLength, mapByte, socForClient, sipfiname.getPort());
+               // mapIpclientVsNameFile.remove(getSipfiname());
+                for (Map.Entry<IpclientVsNameFile, DatagramSocket> ii : mapIpclientVsNameFile.entrySet()) {
+                        if (ii.getKey().getIpclient().equals(getSipfiname().getIpclient())
+                                && ii.getKey().getNameFileDownload().equals(getSipfiname().getNameFileDownload())) {
+                            mapIpclientVsNameFile.remove(ii.getKey());
+                            break;
+                        }
+                    }
+            } catch (Exception ex) {
+                Logger.getLogger(jmainfileserver.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        void CheckAndsendFileLost(int goicuoi, Map<Integer, byte[]> mapByte, DatagramSocket socForClient, int port) {
+            try {
+
+                int lan = 2;
+                while (true) {
+                    System.out.println("------------ send lan -----------" + lan);
+                    lan++;
+                    // gui packet thieu
+                    byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
+                    DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                    socForClient.receive(receivePacket);
+                    ByteArrayInputStream bais = new ByteArrayInputStream(
+                            receivePacket.getData());
+                    ObjectInputStream ois = new ObjectInputStream(bais);
+                    String a = ois.readUTF();
+                    System.out.println("nhan tu client " + a);
+                    if (a.equals("ok")) {
+                        System.out.print("send thanh cong roi");
+                        break;
+                    }
+                    // gui lai packet vs so luong la a.
+                    String[] sp = a.split("\\,");
+                    String cuoi="";
+                    for (String sp1 : sp) {
+                        cuoi=sp1;
+                        FileDowInfo filedow = new FileDowInfo();
+                        filedow.setIpServerFile(ipfileserver.getText());
+                        filedow.setPortServer(port);
+                        filedow.setNameFile(getFiledownreceive().getNameFile());
+                        filedow.setSogoithu(Integer.valueOf(sp1));
+                        filedow.setGoicuoicung(goicuoi);
+                        filedow.setDatafile(mapByte.get(Integer.valueOf(sp1)));
+                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                        ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                        oos2.writeObject(filedow);
+                        oos2.reset();
+                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                                baos2.toByteArray().length, getIpClientFile(), port);
+                        socForClient.send(sendPacket2);
+                        System.out.println("Gui file " + getFiledownreceive().getNameFile() + " goi " + Integer.valueOf(sp1));
+                        Thread.sleep(50);
+                    }
+
+                    for (int i2 = 0; i2 < 10; i2++) {
+                        FileDowInfo filedow = new FileDowInfo();
+                        filedow.setIpServerFile(ipfileserver.getText());
+                        filedow.setPortServer(sipfiname.getPort());
+                        filedow.setNameFile(getFiledownreceive().getNameFile());
+                        filedow.setSogoithu(Integer.valueOf(cuoi));
+                        filedow.setStatus(3);
+                        filedow.setGoicuoicung(goicuoi);
+                        filedow.setDatafile(mapByte.get(Integer.valueOf(cuoi)));
+                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                        ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                        oos2.writeObject(filedow);
+                        oos2.reset();
+                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                                baos2.toByteArray().length, getIpClientFile(), sipfiname.getPort());
+                        socForClient.send(sendPacket2);
+                        System.out.println("Gui " + i2 + " file cuoi " + getFiledownreceive().getNameFile() + " goi " + Integer.valueOf(cuoi));
+                        Thread.sleep(100);
+                    }
+                }
+
+            } catch (Exception e) {
+                System.out.print("Error");
+            }
+        }
+
+        /**
+         * @return the socForClient
+         */
+        public DatagramSocket getSocForClient() {
+            return socForClient;
+        }
+
+        /**
+         * @param socForClient the socForClient to set
+         */
+        public void setSocForClient(DatagramSocket socForClient) {
+            this.socForClient = socForClient;
+        }
+
+        /**
+         * @return the filedownreceive
+         */
+        public FileDowInfo getFiledownreceive() {
+            return filedownreceive;
+        }
+
+        /**
+         * @param filedownreceive the filedownreceive to set
+         */
+        public void setFiledownreceive(FileDowInfo filedownreceive) {
+            this.filedownreceive = filedownreceive;
+        }
+
+        /**
+         * @return the ipClientFile
+         */
+        public InetAddress getIpClientFile() {
+            return ipClientFile;
+        }
+
+        /**
+         * @param ipClientFile the ipClientFile to set
+         */
+        public void setIpClientFile(InetAddress ipClientFile) {
+            this.ipClientFile = ipClientFile;
+        }
+
+        /**
+         * @return the sipfiname
+         */
+        public IpclientVsNameFile getSipfiname() {
+            return sipfiname;
+        }
+
+        /**
+         * @param sipfiname the sipfiname to set
+         */
+        public void setSipfiname(IpclientVsNameFile sipfiname) {
+            this.sipfiname = sipfiname;
+        }
+
+    }
+
+    // class luu ipclient va ten file can download
+    class IpclientVsNameFile {
+
+        private int port;
+        private InetAddress ipclient;
+        private String nameFileDownload;
+
+        public IpclientVsNameFile(int port, InetAddress ipclient, String nameFileDownload) {
+            this.port = port;
+            this.ipclient = ipclient;
+            this.nameFileDownload = nameFileDownload;
+        }
+
+        /**
+         * @return the port
+         */
+        public int getPort() {
+            return port;
+        }
+
+        /**
+         * @param port the port to set
+         */
+        public void setPort(int port) {
+            this.port = port;
+        }
+
+        /**
+         * @return the ipclient
+         */
+        public InetAddress getIpclient() {
+            return ipclient;
+        }
+
+        /**
+         * @param ipclient the ipclient to set
+         */
+        public void setIpclient(InetAddress ipclient) {
+            this.ipclient = ipclient;
+        }
+
+        /**
+         * @return the nameFileDownload
+         */
+        public String getNameFileDownload() {
+            return nameFileDownload;
+        }
+
+        /**
+         * @param nameFileDownload the nameFileDownload to set
+         */
+        public void setNameFileDownload(String nameFileDownload) {
+            this.nameFileDownload = nameFileDownload;
+        }
+
+    }
+
+    // ServerMasterHandler
+    public class ServerMasterHandler implements Runnable {
+
+        BufferedReader inFileServer;
+        Socket sockFileServer;
+
+        public ServerMasterHandler(Socket Socket) {
+            try {
                 sockFileServer = Socket;
                 InputStreamReader isReader = new InputStreamReader(sockFileServer.getInputStream());
                 inFileServer = new BufferedReader(isReader);
-            }
-            catch (Exception ex) 
-            {
+            } catch (Exception ex) {
                 error.setText("Error connect with server");
                 error.setVisible(true);
                 error.setForeground(Color.red);
                 Thread.currentThread().interrupt();
-                isConnect=false;
+                isConnect = false;
             }
 
-       }
+        }
 
-       @Override
-       public void run() 
-       {
+        @Override
+        public void run() {
             String message;
             String[] data;
 
-            try 
-            {
-                while ((message = inFileServer.readLine()) != null) 
-                {
-                    if(message.equals("exitservermaster")){
-                       error.setText("Error connect with server");
-                       error.setVisible(true);
-                       error.setForeground(Color.red);
-                       isConnect=false;
-                       Thread.currentThread().interrupt();
-                       
+            try {
+                while ((message = inFileServer.readLine()) != null) {
+                    if (message.equals("exitservermaster")) {
+                        error.setText("Error connect with server");
+                        error.setVisible(true);
+                        error.setForeground(Color.red);
+                        isConnect = false;
+                        Thread.currentThread().interrupt();
+
                     }
-                } 
-             } 
-             catch (Exception ex) 
-             { 
-                 error.setText("Error connect with server");
-                 error.setVisible(true);
-                 error.setForeground(Color.red);
+                }
+            } catch (Exception ex) {
+                error.setText("Error connect with server");
+                error.setVisible(true);
+                error.setForeground(Color.red);
                 ex.printStackTrace();
-                isConnect=false;
+                isConnect = false;
                 Thread.currentThread().interrupt();
-             } 
-	} 
+            }
+        }
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton brower;
     private javax.swing.JButton btn_connection;
