@@ -27,7 +27,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,13 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import org.apache.commons.lang3.StringUtils;
-import java.util.Timer;
 
 /**
  *
@@ -64,6 +61,9 @@ public class jmainclient extends javax.swing.JFrame {
 
     // port user
     List<Integer> portuse = new ArrayList<>();
+
+    // lay tieng trinh dang download neu dong bao cho fileserver
+    Map<String, DatagramSocket> mapIsDownloading = new HashMap<>();
 
     /**
      * Creates new form jmainserver
@@ -516,6 +516,10 @@ public class jmainclient extends javax.swing.JFrame {
                     }
                 }
                 int portsocForServer = Integer.valueOf(port);
+                // them cao map is downloading server file
+                final String namemapIsDownloading = ipServerFile + "|" + port + "|" + namefile;
+                mapIsDownloading.put(namemapIsDownloading, socForServer);
+
                 //byte[] datafile=new byte[MAX_PIECES_OF_FILE_SIZE];
                 //FileDowInfo filedowss= new FileDowInfo(namefile,datafile,ipServerFile,portServerFile,0,0,1);
                 FileDowInfo filedowss = new FileDowInfo();
@@ -565,7 +569,7 @@ public class jmainclient extends javax.swing.JFrame {
                         System.out.println("Loii khong du goi gui lai server file Thieu goi tin :");
                         Set<Integer> seti = getPacketLost(PacketReceive, sogoi);
                         String s = xuatSet(seti);
-                        System.out.println("So goi tin thieu gui ve file server "+s);
+                        System.out.println("So goi tin thieu gui ve file server " + s);
                         // gui thong bao la thieu goi tin 
                         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
                         ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
@@ -606,7 +610,7 @@ public class jmainclient extends javax.swing.JFrame {
                             socForServer.send(sendPacket2);
                             Thread.sleep(100);
                         }
-                         break;
+                        break;
                     }
                 }
 
@@ -630,8 +634,15 @@ public class jmainclient extends javax.swing.JFrame {
                         break;
                     }
                 }
+                // chay xong xoa no trong isdonwloading
+                for (Map.Entry<String, DatagramSocket> ii : mapIsDownloading.entrySet()) {
+                    if (ii.getKey().equals(namemapIsDownloading)) {
+                        mapIsDownloading.remove(ii.getKey());
+                        break;
+                    }
+                }
+                // tai xong dung tieng trinh luon
                 Thread.currentThread().interrupt();
-
             } catch (Exception ex) {
                 Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
                 Thread.currentThread().interrupt();
@@ -810,6 +821,22 @@ public class jmainclient extends javax.swing.JFrame {
         if (outServerMasterStream != null) {
             outServerMasterStream.print("exit");
             outServerMasterStream.flush();
+        }
+        // gui den cac serverfile dang download bao la Ok dong nghia vs viec hoang thanh down
+        for (Map.Entry<String, DatagramSocket> ii : mapIsDownloading.entrySet()) {
+            try {
+                String slp[] = ii.getKey().split("\\|");
+                System.out.println("gui lai server file OK");
+                ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                oos2.writeUTF("ok");
+                oos2.flush();
+                DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                        baos2.toByteArray().length, InetAddress.getByName(slp[0]), Integer.valueOf(slp[1]));
+                ii.getValue().send(sendPacket2);
+            } catch (Exception e) {
+                System.out.print(e);
+            }
         }
     }//GEN-LAST:event_formWindowClosing
 
