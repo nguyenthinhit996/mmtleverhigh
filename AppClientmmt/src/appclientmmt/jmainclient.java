@@ -594,16 +594,18 @@ public class jmainclient extends javax.swing.JFrame {
 
                     } else {
                         // bao serfile la ok roi
-                        
-                        System.out.println("gui lai server file OK");
-                        ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
-                        ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
-                        oos2.writeUTF("ok");
-                        oos2.flush();
-                        DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
-                                baos2.toByteArray().length, InetAddress.getByName(getIpServerFile()), portsocForServer);
-                        socForServer.send(sendPacket2);
-                        break;
+                        for (int i = 0; i < 10; i++) {
+                            System.out.println("gui lai server file OK");
+                            ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+                            ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
+                            oos2.writeUTF("ok");
+                            oos2.flush();
+                            DatagramPacket sendPacket2 = new DatagramPacket(baos2.toByteArray(),
+                                    baos2.toByteArray().length, InetAddress.getByName(getIpServerFile()), portsocForServer);
+                            socForServer.send(sendPacket2);
+                            Thread.sleep(100);
+                        }
+                         break;
                     }
                 }
 
