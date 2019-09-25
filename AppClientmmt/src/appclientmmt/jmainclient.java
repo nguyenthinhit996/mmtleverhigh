@@ -565,6 +565,7 @@ public class jmainclient extends javax.swing.JFrame {
                         System.out.println("Loii khong du goi gui lai server file Thieu goi tin :");
                         Set<Integer> seti = getPacketLost(PacketReceive, sogoi);
                         String s = xuatSet(seti);
+                        System.out.println("So goi tin thieu gui ve file server "+s);
                         // gui thong bao la thieu goi tin 
                         ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
                         ObjectOutputStream oos2 = new ObjectOutputStream(baos2);
