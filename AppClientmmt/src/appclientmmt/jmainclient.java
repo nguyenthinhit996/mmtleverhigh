@@ -64,6 +64,9 @@ public class jmainclient extends javax.swing.JFrame {
 
     // lay tieng trinh dang download neu dong bao cho fileserver
     Map<String, DatagramSocket> mapIsDownloading = new HashMap<>();
+    
+    // status of file process downloading file 
+    DefaultListModel modelFiledownding = new DefaultListModel();
 
     /**
      * Creates new form jmainserver
@@ -406,33 +409,35 @@ public class jmainclient extends javax.swing.JFrame {
             if (list_allfile.getSelectedValue() != null) {
                 String value = list_allfile.getSelectedValue();
                 System.out.println(value);
-                // get path save
-                selectPathSave();
-                if (!lab_path_save.getText().equals("No Selection")) {
-                    String regex = "\\|";
-                    String[] spl = value.split(regex);
-                    // kiem tra port da duoc tao chua
-                    if (mapDatagramSocket.containsKey(Integer.valueOf(spl[1]))) {
-                        Thread a = new Thread(new Send_Receive_File(spl[0], Integer.valueOf(spl[1]),
-                                spl[2], lab_path_save.getText(), mapDatagramSocket.get(Integer.valueOf(spl[1]))));
-                        a.start();
-
-                    } else {
-                        // tao DatagramSocket clientSocket de gui nhan file
-                        int port = Integer.valueOf(spl[1]);
-                        try {
-                            // socket chu 
-                            DatagramSocket clientSocket = new DatagramSocket(port);
-                            mapDatagramSocket.put(port, clientSocket);
+                // check is downloading 
+                if (!isDownloading(value)) {
+                    // get path save
+                    selectPathSave();
+                    if (!lab_path_save.getText().equals("No Selection")) {
+                        String regex = "\\|";
+                        String[] spl = value.split(regex);
+                        // kiem tra port da duoc tao chua
+                        if (mapDatagramSocket.containsKey(Integer.valueOf(spl[1]))) {
                             Thread a = new Thread(new Send_Receive_File(spl[0], Integer.valueOf(spl[1]),
-                                    spl[2], lab_path_save.getText(), clientSocket));
+                                    spl[2], lab_path_save.getText(), mapDatagramSocket.get(Integer.valueOf(spl[1]))));
                             a.start();
-                        } catch (Exception ex) {
-                            Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+
+                        } else {
+                            // tao DatagramSocket clientSocket de gui nhan file
+                            int port = Integer.valueOf(spl[1]);
+                            try {
+                                // socket chu 
+                                DatagramSocket clientSocket = new DatagramSocket(port);
+                                mapDatagramSocket.put(port, clientSocket);
+                                Thread a = new Thread(new Send_Receive_File(spl[0], Integer.valueOf(spl[1]),
+                                        spl[2], lab_path_save.getText(), clientSocket));
+                                a.start();
+                            } catch (Exception ex) {
+                                Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                     }
                 }
-
             } else {
                 Confim con = new Confim("Not choose file !!!");
                 con.setLocation(400, 200);
@@ -449,7 +454,32 @@ public class jmainclient extends javax.swing.JFrame {
 
     private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
         // TODO add your handling code here:
+         if (list_allfile.getModel().getSize() != 0) {
+            if (list_allfile.getSelectedValue() != null) {
+                
+            }else{
+                Confim con = new Confim("Not choose file !!!");
+                con.setLocation(400, 200);
+                con.setAlwaysOnTop(true);
+                con.setVisible(true);
+            }
+         }else{
+            Confim con = new Confim("Not files in list !!!");
+            con.setLocation(400, 200);
+            con.setAlwaysOnTop(true);
+            con.setVisible(true);
+         }
     }//GEN-LAST:event_btn_cancelActionPerformed
+
+    boolean isDownloading(String value) {
+        for (Map.Entry<String, DatagramSocket> ii : mapIsDownloading.entrySet()) {
+            String[] slp = ii.getKey().split("\\|");
+            if (value.equals(slp[2])) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     class Send_Receive_File implements Runnable {
 
@@ -483,7 +513,7 @@ public class jmainclient extends javax.swing.JFrame {
             String port;
             DatagramSocket socForServer;
             try {
-
+                int indexModeldownloading=modelFiledownding.size();
                 // gui thong tin den file server de dang ki port moi
                 while (true) {
                     ByteArrayOutputStream byteofclient = new ByteArrayOutputStream();
@@ -550,8 +580,14 @@ public class jmainclient extends javax.swing.JFrame {
                 ByteArrayInputStream bais = new ByteArrayInputStream(
                         receiveFileDownLoadPk.getData());
                 ObjectInputStream ois = new ObjectInputStream(bais);
-                FileDowInfo filedownreceive = (FileDowInfo) ois.readObject();
-
+                FileDowInfo filedownreceive = (FileDowInfo) ois.readObject();   
+                
+                // set status 
+                // status downloading file
+                String filestatus=namefile+"|0%";
+                modelFiledownding.set(indexModeldownloading, filestatus);
+                list_process.setModel(modelFiledownding);
+                
                 // nhan tat ca cac goi cua file
                 List<FileDowInfo> listFile;
                 List<Integer> PacketReceive;
@@ -559,11 +595,12 @@ public class jmainclient extends javax.swing.JFrame {
                 int sogoi = filedownreceive.getSoluonggoi();
                 long timenhan = sogoi * 750; // moi goi 750 milisecond  ( 10mb ~ 2 minute)
                 System.out.println(" start nhan goi trong " + timenhan + " mili s ");
-                dsFiledownreceive = readPackTiList(timenhan, socForServer, sogoi);
+                dsFiledownreceive = readPackTiList(timenhan, socForServer, sogoi,indexModeldownloading,0);
                 Iterator mapFileVsPack = dsFiledownreceive.entrySet().iterator();
                 Map.Entry entry = (Map.Entry) mapFileVsPack.next();
                 listFile = (List<FileDowInfo>) entry.getKey();
-                PacketReceive = (List<Integer>) entry.getValue();
+                PacketReceive = (List<Integer>) entry.getValue();             
+                
                 while (true) {
                     if (listFile.size() != sogoi) {
                         System.out.println("Loii khong du goi gui lai server file Thieu goi tin :");
@@ -584,7 +621,7 @@ public class jmainclient extends javax.swing.JFrame {
                         String[] spl = s.split("\\,");
                         long timenhan2 = spl.length * 750;
                         System.out.println(" start nhan " + spl.length + " goi trong " + timenhan2 + " mili s ");
-                        dsFiledownreceive2 = readPackTiList(timenhan2, socForServer, spl.length);
+                        dsFiledownreceive2 = readPackTiList(timenhan2, socForServer, spl.length,indexModeldownloading,dsFiledownreceive.size());
                         Iterator mapFileVsPack2 = dsFiledownreceive2.entrySet().iterator();
                         Map.Entry entry2 = (Map.Entry) mapFileVsPack2.next();
                         // nhan tat ca cac goi cua file
@@ -650,12 +687,14 @@ public class jmainclient extends javax.swing.JFrame {
 
         }
 
-        Map<List<FileDowInfo>, List<Integer>> readPackTiList(long maxtime, DatagramSocket socForServer, int maxgoi) {
+        Map<List<FileDowInfo>, List<Integer>> readPackTiList(long maxtime, DatagramSocket socForServer, int maxgoi,int indexs,int numdownloaded) {
             Map<List<FileDowInfo>, List<Integer>> mapdsFiledownreceives = new HashMap<>();
             List<FileDowInfo> dsFiledownreceives = new ArrayList<>();
             List<Integer> dspacket = new ArrayList<>();
             long timestart = System.currentTimeMillis();
             int index = 1;
+            
+             
             try {
                 while (true) {
 
@@ -681,6 +720,10 @@ public class jmainclient extends javax.swing.JFrame {
                         break;
                     }
                     index++;
+                    int upmaxfilestatus=((dsFiledownreceives.size()+numdownloaded)/maxgoi)*100 ;
+                    String upfilestatus=namefile+ "|"+String.valueOf(upmaxfilestatus)+"%";
+                    modelFiledownding.set(indexs, upfilestatus);
+                    list_process.setModel(modelFiledownding);
                 }
             } catch (Exception ex) {
                 Logger.getLogger(jmainclient.class.getName()).log(Level.SEVERE, null, ex);
