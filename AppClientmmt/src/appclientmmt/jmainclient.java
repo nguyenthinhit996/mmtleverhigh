@@ -678,6 +678,8 @@ public class jmainclient extends javax.swing.JFrame {
                         break;
                     }
                 }
+                // dong file 
+                bos.close();
                 // tai xong dung tieng trinh luon
                 Thread.currentThread().interrupt();
             } catch (Exception ex) {
