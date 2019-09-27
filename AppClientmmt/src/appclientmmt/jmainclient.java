@@ -582,18 +582,11 @@ public class jmainclient extends javax.swing.JFrame {
                 ObjectInputStream ois = new ObjectInputStream(bais);
                 FileDowInfo filedownreceive = (FileDowInfo) ois.readObject();   
                 
-<<<<<<< HEAD
-                
                 // set status 
                 // status downloading file
                 String filestatus=namefile+"|0%";
                 modelFiledownding.add(indexModeldownloading, filestatus);
-=======
-                // set status 
-                // status downloading file
-                String filestatus=namefile+"|0%";
-                modelFiledownding.set(indexModeldownloading, filestatus);
->>>>>>> 4955887c7a61eed2c5e6e048d600def59f3db341
+
                 list_process.setModel(modelFiledownding);
                 
                 // nhan tat ca cac goi cua file
