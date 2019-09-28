@@ -203,7 +203,6 @@ public class jmainclient extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         list_allfile = new javax.swing.JList<>();
         btn_downloadfile = new javax.swing.JButton();
-        btn_cancel = new javax.swing.JButton();
         lab_path_save = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
 
@@ -280,15 +279,6 @@ public class jmainclient extends javax.swing.JFrame {
             }
         });
 
-        btn_cancel.setBackground(new java.awt.Color(46, 45, 38));
-        btn_cancel.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
-        btn_cancel.setText("Cancel Download");
-        btn_cancel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btn_cancelActionPerformed(evt);
-            }
-        });
-
         lab_path_save.setFont(new java.awt.Font("Ubuntu", 1, 18)); // NOI18N
         lab_path_save.setText("D:/abc");
 
@@ -320,18 +310,15 @@ public class jmainclient extends javax.swing.JFrame {
                                 .addComponent(jLabel3)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(txt_ipservermas, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 102, Short.MAX_VALUE)
                                 .addComponent(jLabel5)
                                 .addGap(6, 6, 6)
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(txt_portmas)
                                     .addComponent(btn_connect, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .addGap(0, 362, Short.MAX_VALUE)
-                                .addComponent(btn_cancel))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                                 .addComponent(lab_path_save, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
                                 .addComponent(btn_downloadfile, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -378,9 +365,7 @@ public class jmainclient extends javax.swing.JFrame {
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn_cancel)
-                .addContainerGap())
+                .addGap(53, 53, 53))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -466,25 +451,6 @@ public class jmainclient extends javax.swing.JFrame {
             con.setVisible(true);
         }
     }//GEN-LAST:event_btn_downloadfileActionPerformed
-
-    private void btn_cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_cancelActionPerformed
-        // TODO add your handling code here:
-        if (list_allfile.getModel().getSize() != 0) {
-            if (list_allfile.getSelectedValue() != null) {
-
-            } else {
-                Confim con = new Confim("Not choose file !!!");
-                con.setLocation(400, 200);
-                con.setAlwaysOnTop(true);
-                con.setVisible(true);
-            }
-        } else {
-            Confim con = new Confim("Not files in list !!!");
-            con.setLocation(400, 200);
-            con.setAlwaysOnTop(true);
-            con.setVisible(true);
-        }
-    }//GEN-LAST:event_btn_cancelActionPerformed
 
     boolean isDownloading(String value) {
         for (Map.Entry<String, DatagramSocket> ii : mapIsDownloading.entrySet()) {
@@ -962,7 +928,6 @@ public class jmainclient extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btn_cancel;
     private javax.swing.JButton btn_connect;
     private javax.swing.JButton btn_downloadfile;
     private javax.swing.JLabel error;
