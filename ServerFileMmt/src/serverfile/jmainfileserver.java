@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
+import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -494,7 +495,12 @@ public class jmainfileserver extends javax.swing.JFrame {
                 System.out.println("Ok ket noi thanh cong");
 
 //                // ket noi UDP vs client
-                DatagramSocket serverSocket = new DatagramSocket(Integer.valueOf(lab_port.getText()));
+                DatagramSocket serverSocket=null;
+                try{
+                    serverSocket = new DatagramSocket(Integer.valueOf(lab_port.getText()));
+                }catch(BindException e){
+                    System.out.println(e.getLocalizedMessage());
+                }
                 Thread abc = new Thread(new Send_Receive_File(serverSocket));
                 abc.start();
 
